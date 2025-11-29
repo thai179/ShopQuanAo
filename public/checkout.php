@@ -18,7 +18,10 @@
         // Tính tổng tiền giỏ hàng
         $tongtien = 0;
         $giohang = [];
-        foreach ($_SESSION['cart'] as $masp => $soluong) {
+        foreach ($_SESSION['cart'] as $cart_key => $item) {
+            $masp = $item['id'];
+            $soluong = $item['soluong'];
+
             $sp = $mh->laymathangtheoid($masp);
             if ($sp) {
                 $thanhtien = $sp['GiaBan'] * $soluong;
@@ -91,12 +94,19 @@
                                 </div>
                                 <div class="form-check">
                                     <input class="form-check-input" type="radio" name="phuongthuc" 
-                                           id="bank" value="Chuyển khoản">
-                                    <label class="form-check-label" for="bank">
-                                        <i class="bi bi-bank"></i> Chuyển khoản ngân hàng
+                                           id="vnpay" value="VNPAY">
+                                    <label class="form-check-label" for="vnpay">
+                                        <i class="bi bi-credit-card"></i> Thanh toán qua VNPAY
                                     </label>
                                 </div>
                             </div>
+                            <!-- Các trường ẩn để truyền dữ liệu cần thiết cho VNPAY -->
+                            <input type="hidden" name="tongtien" value="<?php echo $tongtien; ?>">
+                            <?php 
+                                // Tạo một mã đơn hàng duy nhất để gửi qua VNPAY
+                                $ma_don_hang = "SHOPQUANAO_" . time(); 
+                            ?>
+                            <input type="hidden" name="ma_don_hang" value="<?php echo $ma_don_hang; ?>">
                         </form>
                     </div>
                 </div>
@@ -159,5 +169,22 @@
         </div>
     <?php } ?>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('checkoutForm');
+    const paymentRadios = document.querySelectorAll('input[name="phuongthuc"]');
+
+    paymentRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.value === 'VNPAY') {
+                form.action = 'index.php?action=taothanhtoanvnpay'; // Chuyển action của form
+            } else {
+                form.action = 'index.php?action=xulythanhtoan'; // Action mặc định cho COD
+            }
+        });
+    });
+});
+</script>
 
 <?php include("inc/bottom.php"); ?>

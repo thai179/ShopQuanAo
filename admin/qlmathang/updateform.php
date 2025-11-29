@@ -29,6 +29,31 @@
 			<label>Giá bán</label>
 			<input class="form-control" type="number" name="txtgiaban" value="<?php echo $m["GiaBan"]; ?>" required>
 		</div>
+		<div class="mb-3 mt-3 p-3 border rounded">
+			<label class="form-label fw-bold">Số lượng theo size</label>
+			<div class="row g-3">
+				<div class="col-md">
+					<label for="soluong_s" class="form-label">Size S</label>
+					<input type="number" class="form-control" name="soluong[s]" id="soluong_s" value="<?php echo $soluong_ton['s'] ?? 0; ?>" min="0">
+				</div>
+				<div class="col-md">
+					<label for="soluong_m" class="form-label">Size M</label>
+					<input type="number" class="form-control" name="soluong[m]" id="soluong_m" value="<?php echo $soluong_ton['m'] ?? 0; ?>" min="0">
+				</div>
+				<div class="col-md">
+					<label for="soluong_l" class="form-label">Size L</label>
+					<input type="number" class="form-control" name="soluong[l]" id="soluong_l" value="<?php echo $soluong_ton['l'] ?? 0; ?>" min="0">
+				</div>
+				<div class="col-md">
+					<label for="soluong_xl" class="form-label">Size XL</label>
+					<input type="number" class="form-control" name="soluong[xl]" id="soluong_xl" value="<?php echo $soluong_ton['xl'] ?? 0; ?>" min="0">
+				</div>
+				<div class="col-md">
+					<label for="soluong_free" class="form-label">Free Size</label>
+					<input type="number" class="form-control" name="soluong[free]" id="soluong_free" value="<?php echo $soluong_ton['free'] ?? 0; ?>" min="0">
+				</div>
+			</div>
+		</div>
 	<div class="my-3">
 		<label>Hình ảnh</label><br>
 		<input type="hidden" name="txthinhcu" value="<?php echo $m["HinhAnh"]; ?>">

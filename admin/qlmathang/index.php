@@ -8,8 +8,8 @@ require("../../model/database.php");
 require("../../model/danhmuc.php");
 require("../../model/mathang.php");
 require("../../model/hinhanhsanpham.php");
+require("../../model/bienthesp.php"); 
 
-// Xét xem có thao tác nào được chọn
 if (isset($_REQUEST["action"])) {
     $action = $_REQUEST["action"];
 } else {
@@ -19,6 +19,7 @@ if (isset($_REQUEST["action"])) {
 $dm = new DANHMUC();
 $mh = new MATHANG();
 $ha = new HINHANHSANPHAM();
+$bt = new BIENTHESP();
 
 switch ($action) {
     case "xem":
@@ -41,10 +42,23 @@ switch ($action) {
         $mathanghh->setdanhmuc_id($_POST["optdanhmuc"]);
         $mathanghh->setMoTa($_POST['txtmota']);
 
+        // Tính tổng số lượng từ các size
+        $soluong_sizes = isset($_POST['soluong']) && is_array($_POST['soluong']) ? $_POST['soluong'] : [];
+        $tong_soluong = 0;
+        foreach ($soluong_sizes as $soluong) {
+            $tong_soluong += (int)$soluong;
+        }
+        $mathanghh->setSoLuongTon($tong_soluong);
+
         // Thêm mặt hàng vào CSDL
         $mh->themmathang($mathanghh);
 
         $maSP = $mh->laymathangvuathem();
+
+        // Thêm biến thể sản phẩm
+        foreach ($soluong_sizes as $ten_size => $soluong) {
+            $bt->thembienthe($maSP, strtoupper($ten_size), (int)$soluong);
+        }
 
         // Thư mục lưu ảnh
         $uploadFolder = __DIR__ . "/../../images/products/";
@@ -106,6 +120,15 @@ switch ($action) {
         if (isset($_GET["MaSP"])) {
             $m = $mh->laymathangtheoid($_GET["MaSP"]);
             $danhmuc = $dm->laydanhmuc();
+
+            // Lấy số lượng tồn kho theo size
+            $bienthe_sp = $bt->laybienthetheosanpham($_GET["MaSP"]);
+            $soluong_ton = ['s' => 0, 'm' => 0, 'l' => 0, 'xl' => 0, 'free' => 0];
+            foreach ($bienthe_sp as $b) {
+                $ten_size_db = strtolower($b['TenKichCo']); // chuyển về chữ thường để khớp key của mảng
+                if (array_key_exists($ten_size_db, $soluong_ton)) {
+                    $soluong_ton[$ten_size_db] = $b['SoLuongTon'];
+                }            }
             include("updateform.php");
         } else {
             $mathang = $mh->laymathang();
@@ -131,6 +154,14 @@ switch ($action) {
         $mathanghh->setgiagoc($_POST["txtgiagoc"]);
         $mathanghh->setgiaban($_POST["txtgiaban"]);
         $mathanghh->setMoTa($_POST['txtmota']);
+
+        // Tính tổng số lượng từ các size
+        $soluong_sizes = isset($_POST['soluong']) && is_array($_POST['soluong']) ? $_POST['soluong'] : [];
+        $tong_soluong = 0;
+        foreach ($soluong_sizes as $soluong) {
+            $tong_soluong += (int)$soluong;
+        }
+        $mathanghh->setSoLuongTon($tong_soluong);
 
         // 2. Xử lý ảnh đại diện (Main Image)
         $imageToSet = $_POST["txthinhcu"] ?? null; // Mặc định giữ ảnh cũ
@@ -160,6 +191,21 @@ switch ($action) {
 
         // Thực hiện update vào DB
         $mh->suamathang($mathanghh);
+
+        // Cập nhật biến thể sản phẩm
+        foreach ($soluong_sizes as $ten_size => $soluong) {
+            $ten_size_upper = strtoupper($ten_size);
+            $bienthe_hientai = $bt->laymotbienthe($idSP, $ten_size_upper);
+
+            if ($bienthe_hientai) {
+                // Nếu biến thể đã tồn tại, cập nhật nó
+                $bt->capnhatbienthe($bienthe_hientai['MaBienThe'], $ten_size_upper, (int)$soluong);
+            } else {
+                // Nếu biến thể chưa tồn tại, thêm mới
+                $bt->thembienthe($idSP, $ten_size_upper, (int)$soluong);
+            }
+
+        }
 
         // 3. Xử lý ảnh Gallery
         $hasNewGallery = false;

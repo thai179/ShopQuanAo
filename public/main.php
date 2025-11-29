@@ -158,7 +158,11 @@
                             <?php } ?>
                             <span class="text-danger fw-bolder card-text"><?= number_format($mh_item['GiaBan'])?> đ</span>
                         </div>
-                        <a class="btn btn-outline-dark-custom mt-auto" href="index.php?action=chovaogio&id=<?= $mh_item['MaSP']; ?>">Chọn mua</a>
+                        <?php if ($mh_item['SoLuongTon'] > 0): ?>
+                            <a class="btn btn-outline-dark-custom mt-auto" href="index.php?action=chovaogio&id=<?= $mh_item['MaSP']; ?>">Chọn mua</a>
+                        <?php else: ?>
+                            <button class="btn btn-secondary mt-auto" disabled>Hết hàng</button>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -193,7 +197,11 @@
                                 <?php } ?>
                                 <span class="text-danger fw-bolder card-text"><?= number_format($mh_item['GiaBan'])?> đ</span>
                             </div>
-                            <a class="btn btn-outline-dark-custom" href="index.php?action=chovaogio&id=<?= $mh_item['MaSP']; ?>">Chọn mua</a>
+                            <?php if ($mh_item['SoLuongTon'] > 0): ?>
+                                <a class="btn btn-outline-dark-custom" href="index.php?action=chovaogio&id=<?= $mh_item['MaSP']; ?>">Chọn mua</a>
+                            <?php else: ?>
+                                <button class="btn btn-secondary mt-auto" disabled>Hết hàng</button>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>

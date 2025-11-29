@@ -23,7 +23,7 @@
                 <input type="hidden" name="id" value="<?php echo $d["id"]; ?>">
                 <td><?php echo $d["hoten"]; ?></td>
                 <td><?php echo $d["diachi"]; ?></td>
-                <td><?php echo date("d/m/Y", strtotime($d["ngay"])); ?></td>
+                <td><?php echo isset($d["ngay"]) ? date("d/m/Y", strtotime($d["ngay"])) : 'N/A'; ?></td>
                 <td><?php echo number_format($d["tongtien"]); ?> VNĐ</td>
                 <td>
                     <select name="trangthai" class="form-select">

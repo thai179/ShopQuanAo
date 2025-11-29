@@ -15,6 +15,7 @@ require("../model/hinhanhsanpham.php");
 require("../model/phanhoi.php");
 require("../model/donhang.php");
 require("../model/ctdonhang.php");
+require("../model/bienthesp.php");
 
 require("../model/sukien.php"); // Thêm model sự kiện
 
@@ -29,10 +30,16 @@ $ph = new PHANHOI();
 $ctdonhang = new DONHANGCT();
 $dh = new DONHANG();
 
-// Hàm đếm hàng trong giỏ
+// Hàm đếm hàng trong giỏ (dựa trên cấu trúc mới)
 function demhangtronggio()
 {
-    return count($_SESSION['cart']);
+    $count = 0;
+    if (isset($_SESSION['cart'])) {
+        foreach ($_SESSION['cart'] as $item) {
+            $count += $item['soluong'];
+        }
+    }
+    return $count;
 }
 
 // Hàm tính tiền giỏ hàng
@@ -40,8 +47,9 @@ function tinhtiengiohang()
 {
     global $mh;
     $total = 0;
-    foreach ($_SESSION['cart'] as $masp => $soluong) {
-        $sp = $mh->laymathangtheoid($masp);
+    foreach ($_SESSION['cart'] as $cart_key => $item) {
+        $soluong = $item['soluong'];
+        $sp = $mh->laymathangtheoid($item['id']);
         if ($sp) {
             $total += $sp['GiaBan'] * $soluong;
         }
@@ -160,10 +168,6 @@ switch ($action) {
 
                 $islogin = $taikhoan->kiemtrataikhoanhople($username, md5($password));
                 if ($islogin) {
-                    // Đăng nhập thành công, lấy thông tin khách hàng từ bảng khachhang
-                    $user = $kh->layKhachHangTheoUsername($username);
-                    $_SESSION['user']['HoTen'] = $user['HoTen'];
-                    $_SESSION['user']['MaKH'] = $user['MaKhachHang'];
                     // Lấy thông tin tài khoản
                     $userInfo = $taikhoan->laythongtin($username);
 
@@ -222,8 +226,8 @@ switch ($action) {
     case "chitiet":
         // Chi tiết sản phẩm
         if (isset($_GET["id"])) {
+            $s = new BIENTHESP();
             $mahang = $_GET["id"];
-            // $mh->tangluotxem($mahang); // Bỏ comment nếu có method này trong model
             $mhct = $mh->laymathangtheoid($mahang);
             if ($mhct && isset($mhct["MaDM"])) {
                 $madm = $mhct["MaDM"];
@@ -231,6 +235,7 @@ switch ($action) {
             }
             $dsHinhAnh = $ha->layTatCaHinhAnhTheoMaSP($mahang);
             $dsSPLienQuan = $mh->laymathangtheodanhmuc($mhct['MaDM']);
+            $dsSize = $s->laybienthetheosanpham($mahang);
             $tenDM = $dm->laytendanhmuctheoMaSP($mhct['MaDM']);
             $phanhoi = $ph->layphanhoitheoidsp($mahang);
             include("detail.php");
@@ -243,20 +248,19 @@ switch ($action) {
             echo '<script>alert("Vui lòng đăng nhập để xem giỏ hàng!"); window.location="index.php?action=dangnhap";</script>';
             exit();
         }
-
+        
+        $s = new BIENTHESP();
         // Hiển thị giỏ hàng
         $giohang = [];
-        foreach ($_SESSION['cart'] as $masp => $soluong) {
-            $sp = $mh->laymathangtheoid($masp);
+        if (!empty($_SESSION['cart'])) {
+            foreach ($_SESSION['cart'] as $cart_key => $item) {
+                $sp = $mh->laymathangtheoid($item['id']);
+                $dsSize = $s->laybienthetheosanpham($item['id']);
+                if ($sp) {
+                    $giohang[$cart_key] = array_merge($item, ['thanhtien' => $sp['GiaBan'] * $item['soluong'], 'ds_size' => $dsSize]);
+                }
+            }
             if ($sp) {
-                $giohang[$masp] = [
-                    'id' => $sp['MaSP'],
-                    'tenmathang' => $sp['TenSP'],
-                    'hinhanh' => $sp['HinhAnh'],
-                    'giaban' => $sp['GiaBan'],
-                    'soluong' => $soluong,
-                    'thanhtien' => $sp['GiaBan'] * $soluong
-                ];
             }
         }
         include("cart.php");
@@ -272,76 +276,104 @@ switch ($action) {
 
         // Thêm sản phẩm vào giỏ
         if (isset($_REQUEST['id'])) {
-            $id = $_REQUEST['id'];
-        }
-        if (isset($_REQUEST['soluong'])) {
-            $soluong = (int)$_REQUEST['soluong'];
-        } else {
-            $soluong = 1;
-        }
+            $id = $_REQUEST['id']; // MaSP
+            $soluong = isset($_REQUEST['soluong']) ? (int)$_REQUEST['soluong'] : 1;
+            $size = isset($_REQUEST['size']) ? $_REQUEST['size'] : 'Free'; // Mặc định là 'Free' nếu không chọn
 
-        if (isset($_SESSION['cart'][$id])) {
-            // Nếu đã có trong giỏ thì cộng thêm số lượng
-            $soluong += $_SESSION['cart'][$id];
-            $_SESSION['cart'][$id] = $soluong;
-        } else {
-            // Nếu chưa có thì thêm mới
-            $_SESSION['cart'][$id] = $soluong;
-        }
+            // Tạo khóa duy nhất cho sản phẩm trong giỏ hàng
+            $cart_key = $id . '-' . $size;
 
-        // Hiển thị giỏ hàng ngay (không redirect)
-        $giohang = [];
-        foreach ($_SESSION['cart'] as $masp => $sl) {
-            $sp = $mh->laymathangtheoid($masp);
+            $sp = $mh->laymathangtheoid($id);
             if ($sp) {
-                $giohang[$masp] = [
-                    'id' => $sp['MaSP'],
-                    'tenmathang' => $sp['TenSP'],
-                    'hinhanh' => $sp['HinhAnh'],
-                    'giaban' => $sp['GiaBan'],
-                    'soluong' => $sl,
-                    'thanhtien' => $sp['GiaBan'] * $sl
-                ];
+                if (isset($_SESSION['cart'][$cart_key])) {
+                    // Nếu sản phẩm với size này đã có, cộng dồn số lượng
+                    $_SESSION['cart'][$cart_key]['soluong'] += $soluong;
+                } else {
+                    // Nếu chưa có, thêm mới vào giỏ
+                    $_SESSION['cart'][$cart_key] = [
+                        'id' => $id,
+                        'tenmathang' => $sp['TenSP'],
+                        'hinhanh' => $sp['HinhAnh'],
+                        'giaban' => $sp['GiaBan'],
+                        'size' => $size,
+                        'soluong' => $soluong
+                    ];
+                }
             }
         }
-        include("cart.php");
+        header("Location: index.php");
         break;
 
     case "capnhatgio":
-        // Kiểm tra đăng nhập trước khi cập nhật giỏ hàng
         if (!isset($_SESSION['user'])) {
             echo '<script>alert("Vui lòng đăng nhập để cập nhật giỏ hàng!"); window.location="index.php?action=dangnhap";</script>';
             exit();
         }
-
-        // Cập nhật số lượng từ form
-        if (isset($_REQUEST['mh']) && is_array($_REQUEST['mh'])) {
-            foreach ($_REQUEST['mh'] as $masp => $soluong) {
+        if (isset($_POST['soluong']) && is_array($_POST['soluong'])) {
+            foreach ($_POST['soluong'] as $cart_key => $soluong) {
                 $soluong = (int)$soluong;
+                $new_size = $_POST['size'][$cart_key] ?? null;
+
                 if ($soluong > 0) {
-                    $_SESSION['cart'][$masp] = $soluong;
+                    if (isset($_SESSION['cart'][$cart_key])) {
+                        $item = $_SESSION['cart'][$cart_key];
+                        
+                        // Nếu size không đổi
+                        if ($new_size === null || $item['size'] == $new_size) {
+                            $_SESSION['cart'][$cart_key]['soluong'] = $soluong;
+                        } else {
+                            // Nếu size thay đổi
+                            $new_cart_key = $item['id'] . '-' . $new_size;
+                            
+                            // Xóa sản phẩm với size cũ
+                            unset($_SESSION['cart'][$cart_key]);
+
+                            // Nếu sản phẩm với size mới đã tồn tại, cộng dồn số lượng
+                            if (isset($_SESSION['cart'][$new_cart_key])) {
+                                $_SESSION['cart'][$new_cart_key]['soluong'] += $soluong;
+                            } else {
+                                // Nếu chưa, tạo sản phẩm mới với size mới
+                                $item['size'] = $new_size;
+                                $item['soluong'] = $soluong;
+                                $_SESSION['cart'][$new_cart_key] = $item;
+                            }
+                        }
+                    }
                 } else {
-                    // Số lượng = 0 thì xóa khỏi giỏ
-                    unset($_SESSION['cart'][$masp]);
+                    unset($_SESSION['cart'][$cart_key]);
                 }
             }
         }
-        // Hiển thị giỏ hàng sau khi cập nhật (không redirect)
-        $giohang = [];
-        foreach ($_SESSION['cart'] as $masp => $sl) {
-            $sp = $mh->laymathangtheoid($masp);
-            if ($sp) {
-                $giohang[$masp] = [
-                    'id' => $sp['MaSP'],
-                    'tenmathang' => $sp['TenSP'],
-                    'hinhanh' => $sp['HinhAnh'],
-                    'giaban' => $sp['GiaBan'],
-                    'soluong' => $sl,
-                    'thanhtien' => $sp['GiaBan'] * $sl
-                ];
+        header("Location: index.php?action=giohang");
+        break;
+
+    case "capnhatsize":
+        if (!isset($_SESSION['user'])) {
+            echo '<script>alert("Vui lòng đăng nhập!"); window.location="index.php?action=dangnhap";</script>';
+            exit();
+        }
+        if (isset($_POST['cart_key']) && isset($_POST['new_size'])) {
+            $cart_key = $_POST['cart_key'];
+            $new_size = $_POST['new_size'];
+
+            if (isset($_SESSION['cart'][$cart_key])) {
+                $item = $_SESSION['cart'][$cart_key];
+                $new_cart_key = $item['id'] . '-' . $new_size;
+
+                // Xóa sản phẩm với size cũ
+                unset($_SESSION['cart'][$cart_key]);
+
+                // Nếu sản phẩm với size mới đã tồn tại, cộng dồn số lượng
+                if (isset($_SESSION['cart'][$new_cart_key])) {
+                    $_SESSION['cart'][$new_cart_key]['soluong'] += $item['soluong'];
+                } else {
+                    // Nếu chưa, tạo sản phẩm mới với size mới
+                    $item['size'] = $new_size;
+                    $_SESSION['cart'][$new_cart_key] = $item;
+                }
             }
         }
-        include("cart.php");
+        header("Location: index.php?action=giohang");
         break;
 
     case "xoagiohang":
@@ -351,11 +383,15 @@ switch ($action) {
             exit();
         }
 
-        // Xóa toàn bộ giỏ hàng
-        $_SESSION['cart'] = [];
-        // Hiển thị giỏ hàng rỗng (không redirect)
-        $giohang = [];
-        include("cart.php");
+        if (isset($_GET['key'])) {
+            // Xóa một sản phẩm cụ thể
+            $cart_key = $_GET['key'];
+            unset($_SESSION['cart'][$cart_key]);
+        } else {
+            // Xóa toàn bộ giỏ hàng
+            $_SESSION['cart'] = [];
+        }
+        header("Location: index.php");
         break;
 
     case "thongtin":
@@ -438,23 +474,10 @@ switch ($action) {
                 exit();
             }
             
-            // TODO: Lưu thông tin liên hệ vào database hoặc gửi email
-            // Hiện tại chỉ thông báo thành công
             echo '<script>alert("Cảm ơn bạn đã liên hệ! Chúng tôi sẽ phản hồi sớm nhất."); window.location="index.php?action=lienhe";</script>';
         } else {
             include("lienhe.php");
         }
-        break;
-
-    case "thanhtoan":
-        // Kiểm tra đăng nhập trước khi thanh toán
-        if (!isset($_SESSION['user'])) {
-            echo '<script>alert("Vui lòng đăng nhập để thanh toán!"); window.location="index.php?action=dangnhap";</script>';
-            exit();
-        }
-
-        // Trang thanh toán
-        include("checkout.php");
         break;
 
     case "themphanhoi":
@@ -469,7 +492,7 @@ switch ($action) {
             $hoTen = $_POST['HoTen'];
             $danhGia = isset($_POST['DanhGia']) ? (int)$_POST['DanhGia'] : 5;
             $chiTiet = $_POST['ChiTietPH'];
-            $maND = $_SESSION['user']['MaKH']; // Lấy MaKH từ session
+            $maND = $_SESSION['user']['MaKhachHang']; // Lấy MaKhachHang từ session
 
             if (empty($hoTen) || empty($chiTiet)) {
                 echo '<script>alert("Vui lòng điền đầy đủ thông tin."); window.location="index.php?action=detail&id=' . $maSP . '";</script>';
@@ -494,7 +517,7 @@ switch ($action) {
             $chiTiet = $_POST['ChiTietPH'];
 
             // Kiểm tra xem người dùng có phải là chủ sở hữu của phản hồi không
-            if ($_SESSION['user']['MaKH'] != $maKH) {
+            if ($_SESSION['user']['MaKhachHang'] != $maKH) {
                 echo '<script>alert("Bạn không có quyền sửa phản hồi này!"); window.location="index.php?action=detail&id=' . $maSP . '";</script>';
                 exit();
             }
@@ -511,10 +534,20 @@ switch ($action) {
         // Xử lý xóa phản hồi
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['MaKhachHang']) && isset($_POST['MaSP'])) {
             $maKH = $_POST['MaKhachHang'];
-            $maSP = $_GET['MaSP'];
+            $maSP = $_POST['MaSP'];
             $ph->xoaphanhoi($maKH, $maSP);
             echo '<script>alert("Xóa phản hồi thành công!"); window.location="index.php?action=detail&id=' . $maSP . '";</script>';
         }
+        break;
+    case "thanhtoan":
+        // Kiểm tra đăng nhập trước khi thanh toán
+        if (!isset($_SESSION['user'])) {
+            echo '<script>alert("Vui lòng đăng nhập để thanh toán!"); window.location="index.php?action=dangnhap";</script>';
+            exit();
+        }
+
+        // Trang thanh toán
+        include("checkout.php");
         break;
         // Kiểm tra người dùng đã đăng nhập chưa
     case "xulythanhtoan":
@@ -552,13 +585,13 @@ switch ($action) {
         
         // Chuẩn bị chi tiết đơn hàng
         $chitietdonhang = [];
-        foreach ($_SESSION['cart'] as $masp => $soluong) {
-            $sp = $mh->laymathangtheoid($masp);
+        foreach ($_SESSION['cart'] as $cart_key => $item) {
+            $sp = $mh->laymathangtheoid($item['id']);
             if ($sp) {
                 $chitietdonhang[] = [
                     'MaSP' => $sp['MaSP'],
-                    'SoLuong' => $soluong,
-                    'ThanhTien' => $sp['GiaBan'] * $soluong
+                    'SoLuong' => $item['soluong'],
+                    'ThanhTien' => $sp['GiaBan'] * $item['soluong']
                 ];
             }
         }
@@ -566,7 +599,7 @@ switch ($action) {
         // Tạo đơn hàng
         $dh = new DONHANG();
     // Use integer status code consistent with DB schema (0 = new order / awaiting confirmation)
-    $donhangId = $dh->themdonhang($maKhachHang, 0, $chitietdonhang);
+    $donhangId = $dh->themdonhang($maKhachHang, 0, $chitietdonhang, $item['size']);
 
         if ($donhangId) {
             // Xóa giỏ hàng
@@ -585,9 +618,107 @@ switch ($action) {
             header('Location: index.php');
         }
         break;
+    case "taothanhtoanvnpay":
+        // Kiểm tra người dùng đã đăng nhập và có đủ thông tin khách hàng chưa
+        if (!isset($_SESSION['user']['Username']) || !isset($_SESSION['user']['HoTen'])) {
+            die("Bạn cần đăng nhập đầy đủ thông tin để thực hiện thanh toán. Vui lòng đăng nhập lại.");
+        }
+
+        // Lưu đơn hàng vào database với trạng thái "Chưa thanh toán" (mã 0)
+        $ma_kh = $_SESSION['user']['MaKhachHang'];
+
+        // Chuẩn bị chi tiết đơn hàng
+        $chitietdonhang = [];
+        $size = null;
+        foreach ($_SESSION['cart'] as $cart_key => $item) {
+            $sp = $mh->laymathangtheoid($item['id']);
+            if ($sp) {
+                $chitietdonhang[] = [
+                    'MaSP' => $sp['MaSP'],
+                    'SoLuong' => $item['soluong'],
+                    'ThanhTien' => $sp['GiaBan'] * $item['soluong']
+                ];
+                $size = $item['size'];
+            }
+        }
+
+        $ma_don_hang_db = $dh->themdonhang($ma_kh, 0, $chitietdonhang, $size);
+
+        if (!$ma_don_hang_db) {
+            die("Có lỗi xảy ra khi tạo đơn hàng. Vui lòng thử lại.");
+        }
+
+        // Chuyển hướng đến VNPAY
+        require_once("vnpay_config.php");
+        $vnp_TxnRef = $ma_don_hang_db;
+        $vnp_OrderInfo = 'Thanh toan don hang tai Shop Quan Ao';
+        $vnp_OrderType = 'billpayment';
+        $vnp_Amount = $_POST['tongtien'] * 100;
+        $vnp_Locale = 'vn';
+        $vnp_BankCode = '';
+        $vnp_IpAddr = $_SERVER['REMOTE_ADDR'];
+
+        $inputData = array(
+            "vnp_Version" => "2.1.0", "vnp_TmnCode" => $vnp_TmnCode, "vnp_Amount" => $vnp_Amount,
+            "vnp_Command" => "pay", "vnp_CreateDate" => date('YmdHis'), "vnp_CurrCode" => "VND",
+            "vnp_IpAddr" => $vnp_IpAddr, "vnp_Locale" => $vnp_Locale, "vnp_OrderInfo" => $vnp_OrderInfo,
+            "vnp_OrderType" => $vnp_OrderType, "vnp_ReturnUrl" => $vnp_Returnurl, "vnp_TxnRef" => $vnp_TxnRef,
+        );
+        // Gọi file xử lý tạo URL và chuyển hướng
+        include('vnpay_create_payment.php');
+        break;
+    case "vnpay_return":
+        // Xử lý kết quả trả về từ VNPAY
+        require_once("vnpay_config.php");
+
+        $vnp_SecureHash = $_GET['vnp_SecureHash'];
+        $inputData = array();
+        foreach ($_GET as $key => $value) {
+            if (substr($key, 0, 4) == "vnp_") {
+                $inputData[$key] = $value;
+            }
+        }
+
+        unset($inputData['vnp_SecureHash']);
+        ksort($inputData);
+        $i = 0;
+        $hashData = "";
+        foreach ($inputData as $key => $value) {
+            if ($i == 1) {
+                $hashData = $hashData . '&' . urlencode($key) . "=" . urlencode($value);
+            } else {
+                $hashData = $hashData . urlencode($key) . "=" . urlencode($value);
+                $i = 1;
+            }
+        }
+
+        $secureHash = hash_hmac('sha512', $hashData, $vnp_HashSecret);
+
+        // Chuẩn bị các biến để truyền cho view
+        $vnp_TxnRef = $_GET['vnp_TxnRef'];
+        $vnp_Amount = $_GET['vnp_Amount'];
+        $vnp_ResponseCode = $_GET['vnp_ResponseCode'];
+
+        if ($secureHash == $vnp_SecureHash) {
+            if ($vnp_ResponseCode == '00') {
+
+                $dh->capnhattrangthai($vnp_TxnRef, 2); // Cập nhật thành trạng thái 3: Đã thanh toán VNPAY
+                
+                // Xóa giỏ hàng sau khi thanh toán thành công
+                unset($_SESSION['cart']);
+                $thongbao_vnpay = "Thanh toán thành công!";
+            } else {
+                $thongbao_vnpay = "Thanh toán không thành công!";
+            }
+        } else {
+            $thongbao_vnpay = "Lỗi bảo mật: Chữ ký không hợp lệ!";
+        }
+
+        // Gọi view để hiển thị kết quả
+        include 'vnpay_return.php';
+        break;
     default:
         $mathang = $mh->laymathang();
         include("main.php");
         break;
 }
-

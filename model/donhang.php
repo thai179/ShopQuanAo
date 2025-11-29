@@ -8,15 +8,15 @@ class DONHANG{
 		$db = DATABASE::connect();
 		try{
 			$sql = "SELECT 
-						dh.MaDonHang as id, 
+						dh.MaDonHang as id,
+						dh.NgayDat as ngay, 
 						kh.HoTen as hoten, 
 						kh.DiaChi as diachi,
-						(SELECT NgayLap FROM HoaDon WHERE MaHoaDon = dh.MaDonHang) as ngay,
 						(SELECT SUM(ThanhTien) FROM CTDonHang WHERE MaDonHang = dh.MaDonHang) as tongtien,
 						dh.TrangThai as trangthai
 					FROM DonHang dh
 					JOIN KhachHang kh ON dh.MaKhachHang = kh.MaKhachHang
-					ORDER BY (SELECT NgayLap FROM HoaDon WHERE MaHoaDon = dh.MaDonHang) DESC";
+					ORDER BY (dh.NgayDat) DESC";
 			$cmd = $db->prepare($sql);
 			$cmd->execute();
 			$result = $cmd->fetchAll();
@@ -83,11 +83,9 @@ class DONHANG{
 	public function capnhattrangthai($id,$trangthai){
 		$db = DATABASE::connect();
 		try{
-			// Chuyển đổi giá trị số sang chuỗi ENUM tương ứng
 			$sql = "UPDATE DonHang SET TrangThai=:trangthai WHERE MaDonHang=:id";
 			$cmd = $db->prepare($sql);
 			$cmd->bindValue(":id", $id);
-			// Ensure integer is used to match DB schema
 			$cmd->bindValue(":trangthai", (int)$trangthai, PDO::PARAM_INT);  
 			$result = $cmd->execute();
 			return $result;
@@ -102,9 +100,15 @@ class DONHANG{
 	/**
 	 * Thêm một đơn hàng mới và chi tiết của nó
 	 */
-	public function themdonhang($MaKhachHang, $TrangThai, $chi_tiet_don_hang){
+	public function themdonhang($MaKhachHang, $TrangThai, $chi_tiet_don_hang, $size){
 		$db = DATABASE::connect();
 		$db->beginTransaction();
+
+		// Kiểm tra xem MaKhachHang có hợp lệ không
+		if(empty($MaKhachHang)){
+			return false; // Hoặc ném ra một ngoại lệ để xử lý ở nơi gọi hàm
+		}
+
 		try{
 			// Thêm vào bảng DonHang
 			$sql = "INSERT INTO DonHang(MaKhachHang, TrangThai) VALUES(:MaKhachHang, :TrangThai)";
@@ -125,6 +129,24 @@ class DONHANG{
 				$cmd_ct->bindValue(':SoLuong', $ct['SoLuong']);
 				$cmd_ct->bindValue(':ThanhTien', $ct['ThanhTien']);
 				$cmd_ct->execute();
+			}
+			// Cập nhật số lượng tồn của sản phẩm
+			$sql_sp = "UPDATE sanpham SET SoLuongTon = SoLuongTon - :SoLuongMua WHERE MaSP = :MaSP";
+			$cmd_sp = $db->prepare($sql_sp);
+			foreach($chi_tiet_don_hang as $ct){
+				$cmd_sp->bindValue(':SoLuongMua', $ct['SoLuong']);
+				$cmd_sp->bindValue(':MaSP', $ct['MaSP']);
+				$cmd_sp->execute();
+			}
+			$sql_sp = "UPDATE BienTheSanPham 
+					   SET SoLuongTon = SoLuongTon - :SoLuongMua 
+					   WHERE MaSP = :MaSP AND TenKichCo = :TenKichCo";
+			$cmd_sp = $db->prepare($sql_sp);
+			foreach($chi_tiet_don_hang as $ct){
+				$cmd_sp->bindValue(':SoLuongMua', $ct['SoLuong']);
+				$cmd_sp->bindValue(':MaSP', $ct['MaSP']);
+				$cmd_sp->bindValue(':TenKichCo', $size);
+				$cmd_sp->execute();
 			}
 			
 			$db->commit();
@@ -152,5 +174,24 @@ class DONHANG{
 			exit();
 		}
 	}
+	public static function kiemtrakhachhangdamuasanpham($maKH, $maSP){
+        $db = DATABASE::connect();
+        try {
+            $sql = "SELECT COUNT(DISTINCT ct.MaSP) 
+                    FROM DonHang dh 
+                    JOIN CTDonHang ct ON dh.MaDonHang = ct.MaDonHang 
+                    WHERE dh.MaKhachHang = :makh AND ct.MaSP = :masp AND dh.TrangThai = 'Hoàn thành'";
+            $cmd = $db->prepare($sql);
+            $cmd->bindValue(":makh", $maKH);
+            $cmd->bindValue(":masp", $maSP);
+            $cmd->execute();
+            $count = $cmd->fetchColumn();
+            DATABASE::close();
+            return $count > 0;
+        } catch (PDOException $e) {
+            echo "<p>Lỗi truy vấn: " . $e->getMessage() . "</p>";
+            exit();
+        }
+    }
 }
 ?>

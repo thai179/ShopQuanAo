@@ -196,15 +196,15 @@ class MATHANG
     {
         $dbcon = DATABASE::connect();
         try {
-            // Bảng SanPham không có mota, soluongton, luotxem, luotmua
-            $sql = "INSERT INTO SanPham(TenSP, GiaGoc, GiaBan, MoTa, MaDM)
-                    VALUES(:tensp, :giagoc, :giaban, :mota, :madm)";
+            $sql = "INSERT INTO SanPham(TenSP, GiaGoc, GiaBan, MoTa, MaDM, SoLuongTon)
+                    VALUES(:tensp, :giagoc, :giaban, :mota, :madm, :slt)";
             $cmd = $dbcon->prepare($sql);
             $cmd->bindValue(":tensp", $mathang->getTenMatHang());
             $cmd->bindValue(":giagoc", $mathang->getGiaGoc());
             $cmd->bindValue(":giaban", $mathang->getGiaBan());
             $cmd->bindValue(":madm", $mathang->getDanhMuc_Id());
             $cmd->bindValue(":mota", $mathang->getMoTa());
+            $cmd->bindValue(":slt", $mathang->getSoLuongTon());
             
             $result = $cmd->execute();
             return $result;
@@ -237,13 +237,13 @@ class MATHANG
     {
         $dbcon = DATABASE::connect();
         try {
-            // Bảng SanPham không có mota, soluongton, luotxem, luotmua
             $sql = "UPDATE SanPham SET TenSP=:tensp,
                                         GiaGoc=:giagoc,
                                         GiaBan=:giaban,
                                         MaDM=:madm,
                                         MoTa=:mota,
-                                        HinhAnh=:hinhanh
+                                        HinhAnh=:hinhanh,
+                                        SoLuongTon=:slt
                                     WHERE MaSP=:id";
             $cmd = $dbcon->prepare($sql);
             $cmd->bindValue(":tensp", $mathang->getTenMatHang());
@@ -253,6 +253,7 @@ class MATHANG
             $cmd->bindValue(":hinhanh", $mathang->getHinhAnh());
             $cmd->bindValue(":mota", $mathang->getMoTa());
             $cmd->bindValue(":id", $mathang->getId());
+            $cmd->bindValue(":slt", $mathang->getSoLuongTon());
             $result = $cmd->execute();
             return $result;
         } catch (PDOException $e) {

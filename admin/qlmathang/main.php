@@ -10,6 +10,7 @@
 <table class="table table-hover">
 	<tr>
 		<th>Tên mặt hàng</th>
+		<th>Số lượng tồn</th>
 		<th>Giá bán</th>		
 		<th>Hình ảnh</th>		
 		<th>Sửa</th>
@@ -23,6 +24,9 @@
 			<a href="index.php?action=chitiet&MaSP=<?php echo $m["MaSP"]; ?>">
 			<?php echo $m["TenSP"]; ?>
 			</a>	
+		</td>
+		<td>
+			<?php echo number_format($m["SoLuongTon"])?>
 		</td>
 		<td><?php echo number_format($m["GiaBan"]); ?>đ</td>
 		<td>

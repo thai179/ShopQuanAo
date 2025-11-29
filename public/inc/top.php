@@ -46,7 +46,11 @@
                                 <?php
                                 $cartCount = 0;
                                 if (isset($_SESSION['cart'])) {
-                                    $cartCount = array_sum($_SESSION['cart']);
+                                    // Cập nhật logic đếm số lượng cho cấu trúc giỏ hàng mới
+                                    foreach ($_SESSION['cart'] as $item) {
+                                        if (isset($item['soluong']))
+                                            $cartCount += $item['soluong'];
+                                    }
                                 }
                                 if ($cartCount > 0):
                                 ?>

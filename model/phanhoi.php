@@ -73,6 +73,24 @@ class PHANHOI{
             exit();
         }
     }
+
+    // Kiểm tra xem người dùng đã phản hồi sản phẩm này chưa
+    public function kiemtraphanhoitontai($maKH, $maSP){
+        $db = DATABASE::connect();
+        try {
+            $sql = "SELECT COUNT(*) FROM PhanHoi WHERE MaKhachHang = :makh AND MaSP = :masp";
+            $cmd = $db->prepare($sql);
+            $cmd->bindValue(":makh", $maKH);
+            $cmd->bindValue(":masp", $maSP);
+            $cmd->execute();
+            $count = $cmd->fetchColumn();
+            DATABASE::close();
+            return $count > 0;
+        } catch (PDOException $e) {
+            echo "<p>Lỗi truy vấn: " . $e->getMessage() . "</p>";
+            exit();
+        }
+    }
 }
 
 ?>

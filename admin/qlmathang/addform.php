@@ -24,6 +24,31 @@
 		<label for="txtmota" class="form-label">Mô tả</label>
 		<input class="form-control" type="text" name="txtmota" placeholder="Nhập mô tả" required>
 	</div>
+	<div class="mb-3 mt-3 p-3 border rounded">
+		<label class="form-label fw-bold">Số lượng theo size</label>
+		<div class="row g-3">
+			<div class="col-md">
+				<label for="soluong_s" class="form-label">Size S</label>
+				<input type="number" class="form-control" name="soluong[s]" id="soluong_s" value="0" min="0">
+			</div>
+			<div class="col-md">
+				<label for="soluong_m" class="form-label">Size M</label>
+				<input type="number" class="form-control" name="soluong[m]" id="soluong_m" value="0" min="0">
+			</div>
+			<div class="col-md">
+				<label for="soluong_l" class="form-label">Size L</label>
+				<input type="number" class="form-control" name="soluong[l]" id="soluong_l" value="0" min="0">
+			</div>
+			<div class="col-md">
+				<label for="soluong_xl" class="form-label">Size XL</label>
+				<input type="number" class="form-control" name="soluong[xl]" id="soluong_xl" value="0" min="0">
+			</div>
+			<div class="col-md">
+				<label for="soluong_free" class="form-label">Free Size</label>
+				<input type="number" class="form-control" name="soluong[free]" id="soluong_free" value="0" min="0">
+			</div>
+		</div>
+	</div>
 	<div class="mb-3 mt-3">
 		<label for="txtgianhap" class="form-label">Giá nhập</label>
 		<input class="form-control" type="number" name="txtgianhap" value="0">

@@ -129,7 +129,7 @@ class KhachHang
             $db = DATABASE::connect();
             $sql = "SELECT * FROM KhachHang WHERE Username = :username";
             $stmt = $db->prepare($sql);
-            $stmt->bindParam(':username', $username);
+            $stmt->bindValue(':username', $username);
             $stmt->execute();
             return $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
@@ -164,13 +164,13 @@ class KhachHang
                         Email = :email, GioiTinh = :gioiTinh, NgaySinh = :namSinh 
                     WHERE MaKhachHang = :maKH";
             $stmt = $db->prepare($sql);
-            $stmt->bindParam(':hoTen', $khachhang->getHoTen());
-            $stmt->bindParam(':diaChi', $khachhang->getDiaChi());
-            $stmt->bindParam(':soDienThoai', $khachhang->getSoDienThoai());
-            $stmt->bindParam(':email', $khachhang->getEmail());
-            $stmt->bindParam(':gioiTinh', $khachhang->getGioiTinh());
-            $stmt->bindParam(':namSinh', $khachhang->getNamSinh());
-            $stmt->bindParam(':maKH', $khachhang->getMaKhachHang());
+            $stmt->bindValue(':hoTen', $khachhang->getHoTen());
+            $stmt->bindValue(':diaChi', $khachhang->getDiaChi());
+            $stmt->bindValue(':soDienThoai', $khachhang->getSoDienThoai());
+            $stmt->bindValue(':email', $khachhang->getEmail());
+            $stmt->bindValue(':gioiTinh', $khachhang->getGioiTinh());
+            $stmt->bindValue(':namSinh', $khachhang->getNamSinh());
+            $stmt->bindValue(':maKH', $khachhang->getMaKhachHang());
             return $stmt->execute();
         } catch (PDOException $e) {
             echo "Connection failed: " . $e->getMessage();

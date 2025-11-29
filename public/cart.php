@@ -15,7 +15,7 @@
             <i class="bi bi-cart-fill"></i> Giỏ hàng của bạn:
         </h3>
         
-        <form action="index.php">
+        <form method="post" action="index.php">
             <input type="hidden" name="action" value="capnhatgio">
             
             <div class="table-responsive">
@@ -24,13 +24,14 @@
                         <tr>
                             <th>Hình ảnh</th>
                             <th>Tên hàng</th>
+                            <th>Size</th>
                             <th>Đơn giá</th>
                             <th>Số lượng</th>
                             <th>Thành tiền</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach($giohang as $id => $mh): ?>
+                        <?php foreach($giohang as $cart_key => $mh): ?>
                         <tr>
                             <td>
                                 <img width="80" src="../images/products/<?php echo $mh["hinhanh"]; ?>" 
@@ -42,12 +43,23 @@
                                     <strong><?php echo $mh["tenmathang"]; ?></strong>
                                 </a>
                             </td>
+                            <td class="align-middle">
+                                <?php if (!empty($mh['ds_size'])): ?>
+                                <select name="size[<?php echo $cart_key; ?>]" class="form-select" style="width: 100px;">
+                                    <?php foreach ($mh['ds_size'] as $s): ?>
+                                        <option value="<?= $s['TenKichCo'] ?>" <?= ($s['TenKichCo'] == $mh['size']) ? 'selected' : '' ?> <?= ($s['SoLuongTon'] == 0 && $s['TenKichCo'] != $mh['size']) ? 'disabled' : '' ?>>
+                                            <?= $s['TenKichCo'] ?> <?= ($s['SoLuongTon'] == 0) ? '(Hết)' : '' ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <?php else: echo $mh['size']; endif; ?>
+                            </td>
                             <td class="align-middle text-danger fw-bold">
                                 <?php echo number_format($mh["giaban"]); ?> đ
                             </td>
                             <td class="align-middle">
                                 <input type="number" 
-                                       name="mh[<?php echo $mh["id"]; ?>]" 
+                                       name="soluong[<?php echo $cart_key; ?>]" 
                                        value="<?php echo $mh["soluong"]; ?>" 
                                        min="0" 
                                        class="form-control" 
@@ -61,7 +73,7 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td colspan="3"></td>
+                            <td colspan="4"></td>
                             <td class="fw-bold">Tổng tiền</td>
                             <td class="text-danger fw-bold fs-5">
                                 <?php 

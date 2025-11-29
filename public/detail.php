@@ -19,27 +19,43 @@
             <div class="action row">
                 <hr>
                 <form method="get" action="index.php">
+                    <?php
+                        // Kiểm tra xem sản phẩm có còn hàng không
+                        $is_available = false;
+                        if (!empty($dsSize)) {
+                            foreach ($dsSize as $s) {
+                                if ($s['SoLuongTon'] > 0) {
+                                    $is_available = true;
+                                    break;
+                                }
+                            }
+                        }
+                    ?>
                     <input type="hidden" name="action" value="chovaogio">
                     <input type="hidden" name="id" value="<?php echo $mhct['MaSP']; ?>">
+                    <label class="form-label fw-bold">Chọn size:</label>
                     <div class="size-selector">
-                        <input type="radio" id="size-s" name="size" value="S">
-                        <label for="size-s">S</label>
-
-                        <input type="radio" id="size-m" name="size" value="M">
-                        <label for="size-m">M</label>
-
-                        <input type="radio" id="size-l" name="size" value="L">
-                        <label for="size-l">L</label>
-
-                        <input type="radio" id="size-xl" name="size" value="XL">
-                        <label for="size-xl">XL</label>
+                        <?php 
+                        if (!empty($dsSize)):
+                            foreach ($dsSize as $s): ?>
+                                <input type="radio" id="size-<?= strtolower($s['TenKichCo']) ?>" name="size" value="<?= $s['TenKichCo'] ?>" <?= ($s['SoLuongTon'] == 0) ? 'disabled' : 'required' ?>>
+                                <label for="size-<?= strtolower($s['TenKichCo']) ?>" class="<?= ($s['SoLuongTon'] == 0) ? 'out-of-stock' : '' ?>"><?= $s['TenKichCo'] ?></label>
+                            <?php endforeach; else: ?>
+                            <p class="text-danger">Sản phẩm này đã hết hàng.</p>
+                        <?php endif; ?>
                     </div>
 
                     <div class="d-flex align-items-center mt-3">
-                        <input type="number" name="soluong" min="1" value="1" class="form-control w-25 me-3" />
-                        <button type="submit" class="btn btn-primary flex-grow-1">
-                            <i class="bi bi-cart-plus"></i> Thêm vào giỏ hàng
-                        </button>
+                        <input type="number" name="soluong" min="1" value="1" class="form-control w-25 me-3" <?= !$is_available ? 'disabled' : '' ?> />
+                        <?php if ($is_available): ?>
+                            <button type="submit" class="btn btn-primary flex-grow-1">
+                                <i class="bi bi-cart-plus"></i> Thêm vào giỏ hàng
+                            </button>
+                        <?php else: ?>
+                            <button type="button" class="btn btn-secondary flex-grow-1" disabled>
+                                <i class="bi bi-x-circle"></i> Đã hết hàng
+                            </button>
+                        <?php endif; ?>
                     </div>
                 </form>
                 <hr class="mt-4">
@@ -67,46 +83,61 @@
                 <h4>Đánh giá</h4>
 
                 <!-- Form thêm phản hồi mới -->
-                <?php if (isset($_SESSION['user'])): ?>
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <h5 class="card-title">Gửi phản hồi của bạn</h5>
-                        <form action="index.php" method="post">
-                            <input type="hidden" name="action" value="themphanhoi">
-                            <input type="hidden" name="MaSP" value="<?= $mhct['MaSP'] ?>">
-                            
-                            <!-- Giả sử người dùng đã đăng nhập, lấy MaND từ session -->
-                            <!-- <input type="hidden" name="MaND" value="<?= $_SESSION['nguoidung']['id'] ?>"> -->
+                <?php
+                if (isset($_SESSION['user'])) {
+                    $maKhachHang = $_SESSION['user']['MaKhachHang'];
+                    $maSP = $mhct['MaSP'];
+                    
+                    // Kiểm tra xem khách hàng đã mua sản phẩm này chưa
+                    $daMuaHang = $dh->kiemtrakhachhangdamuasanpham($maKhachHang, $maSP);
+                    
+                    // Kiểm tra xem khách hàng đã đánh giá sản phẩm này chưa
+                    $daDanhGia = $ph->kiemtraphanhoitontai($maKhachHang, $maSP);
 
-                            <div class="mb-3">
-                                <label for="HoTen" class="form-label">Họ và Tên</label>                                
-                                <input type="text" class="form-control" id="HoTen" name="HoTen" value="<?= htmlspecialchars($_SESSION['user']['HoTen']) ?>" readonly required>
+                    if ($daMuaHang && !$daDanhGia) {
+                ?>
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h5 class="card-title">Gửi phản hồi của bạn</h5>
+                                <form action="index.php" method="post">
+                                    <input type="hidden" name="action" value="themphanhoi">
+                                    <input type="hidden" name="MaSP" value="<?= $maSP ?>">
+                                    <div class="mb-3">
+                                        <label for="HoTen" class="form-label">Họ và Tên</label>
+                                        <input type="text" class="form-control" id="HoTen" name="HoTen" value="<?= htmlspecialchars($_SESSION['user']['HoTen']) ?>" readonly required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Đánh giá</label>
+                                        <div class="rating">
+                                            <input type="radio" id="star5" name="DanhGia" value="5" required /><label for="star5" title="5 sao">5</label>
+                                            <input type="radio" id="star4" name="DanhGia" value="4" /><label for="star4" title="4 sao">4</label>
+                                            <input type="radio" id="star3" name="DanhGia" value="3" /><label for="star3" title="3 sao">3</label>
+                                            <input type="radio" id="star2" name="DanhGia" value="2" /><label for="star2" title="2 sao">2</label>
+                                            <input type="radio" id="star1" name="DanhGia" value="1" /><label for="star1" title="1 sao">1</label>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="ChiTietPH" class="form-label">Nội dung phản hồi</label>
+                                        <textarea class="form-control" id="ChiTietPH" name="ChiTietPH" rows="3" required></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Gửi phản hồi</button>
+                                </form>
                             </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Đánh giá</label>
-                                <div class="rating">
-                                    <input type="radio" id="star5" name="DanhGia" value="5" /><label for="star5" title="5 sao">5</label>
-                                    <input type="radio" id="star4" name="DanhGia" value="4" /><label for="star4" title="4 sao">4</label>
-                                    <input type="radio" id="star3" name="DanhGia" value="3" /><label for="star3" title="3 sao">3</label>
-                                    <input type="radio" id="star2" name="DanhGia" value="2" /><label for="star2" title="2 sao">2</label>
-                                    <input type="radio" id="star1" name="DanhGia" value="1" /><label for="star1" title="1 sao">1</label>
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="ChiTietPH" class="form-label">Nội dung phản hồi</label>
-                                <textarea class="form-control" id="ChiTietPH" name="ChiTietPH" rows="3" required></textarea>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Gửi phản hồi</button>
-                        </form>
+                        </div>
+                <?php
+                    } elseif ($daMuaHang && $daDanhGia) {
+                        echo '<div class="alert alert-success">Cảm ơn bạn đã đánh giá sản phẩm này.</div>';
+                    } else {
+                        echo '<div class="alert alert-warning">Bạn cần mua sản phẩm này để có thể để lại đánh giá.</div>';
+                    }
+                } else {
+                ?>
+                    <div class="alert alert-info">
+                        Vui lòng <a href="index.php?action=dangnhap">đăng nhập</a> để gửi phản hồi của bạn.
                     </div>
-                </div>
-                <?php else: ?>
-                <div class="alert alert-info">
-                    Vui lòng <a href="index.php?action=dangnhap">đăng nhập</a> để gửi phản hồi của bạn.
-                </div>
-                <?php endif; ?>
+                <?php
+                }
+                ?>
 
                 <?php
                 if (!empty($phanhoi)): foreach ($phanhoi as $ph):
@@ -131,7 +162,7 @@
 
                             <!-- Các nút Sửa và Xóa -->
                             <?php // Chỉ hiển thị nút xóa nếu người dùng đã đăng nhập và là chủ của phản hồi
-                            if (isset($_SESSION['user']) && $_SESSION['user']['MaKH'] == $ph['MaKhachHang']): ?>
+                            if (isset($_SESSION['user']) && isset($_SESSION['user']['MaKhachHang']) && $_SESSION['user']['MaKhachHang'] == $ph['MaKhachHang']): ?>
                             <div class="d-flex justify-content-end align-items-center">
                                 <!-- Nút Sửa (mở modal) -->
                                 <button type="button" class="btn btn-sm btn-outline-secondary me-2" data-bs-toggle="modal" data-bs-target="#suaPhanHoiModal-<?= $ph['MaKhachHang'] ?>">
@@ -160,7 +191,7 @@
             
             <!--Sửa Phản Hồi -->
             <?php if (!empty($phanhoi)) foreach ($phanhoi as $ph): 
-                if (isset($_SESSION['user']) && $_SESSION['user']['MaKH'] == $ph['MaKhachHang']): ?>
+                if (isset($_SESSION['user']) && isset($_SESSION['user']['MaKhachHang']) && $_SESSION['user']['MaKhachHang'] == $ph['MaKhachHang']): ?>
                 <div class="modal fade" id="suaPhanHoiModal-<?= $ph['MaKhachHang'] ?>" tabindex="-1" aria-labelledby="suaPhanHoiModalLabel-<?= $ph['MaKhachHang'] ?>" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
@@ -271,6 +302,24 @@
         .rating label:hover,
         .rating label:hover ~ label {
             color: #ffc700;
+        }
+
+        /* Thêm style cho size hết hàng */
+        .size-selector label.out-of-stock {
+            position: relative;
+            color: #aaa;
+            cursor: not-allowed;
+        }
+
+        .size-selector label.out-of-stock::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 1.5px;
+            background: #999;
+            transform: rotate(-15deg);
         }
     </style>
 
