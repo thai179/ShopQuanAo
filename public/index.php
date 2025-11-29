@@ -6,17 +6,24 @@ if (!isset($_SESSION['cart'])) {
     $_SESSION['cart'] = [];
 }
 
+// Nạp file autoload của Composer để sử dụng PHPMailer
+if (file_exists('../vendor/autoload.php')) {
+    require '../vendor/autoload.php';
+}
+
 require("../model/database.php");
 require("../model/danhmuc.php");
 require("../model/mathang.php");
 require("../model/taikhoan.php");
 require("../model/khachhang.php");
+
+// Nạp lớp Mailer vừa tạo
+require("../model/mailer.php");
 require("../model/hinhanhsanpham.php");
 require("../model/phanhoi.php");
 require("../model/donhang.php");
 require("../model/ctdonhang.php");
 require("../model/bienthesp.php");
-
 require("../model/sukien.php"); // Thêm model sự kiện
 
 $dm = new DANHMUC();
@@ -585,13 +592,18 @@ switch ($action) {
         
         // Chuẩn bị chi tiết đơn hàng
         $chitietdonhang = [];
+        $tongTienDonHang = 0;
         foreach ($_SESSION['cart'] as $cart_key => $item) {
             $sp = $mh->laymathangtheoid($item['id']);
             if ($sp) {
+                $thanhTien = $sp['GiaBan'] * $item['soluong'];
+                $tongTienDonHang += $thanhTien;
                 $chitietdonhang[] = [
                     'MaSP' => $sp['MaSP'],
+                    'TenSP' => $sp['TenSP'], // Thêm Tên SP để gửi mail
+                    'GiaBan' => $sp['GiaBan'], // Thêm Giá bán để gửi mail
                     'SoLuong' => $item['soluong'],
-                    'ThanhTien' => $sp['GiaBan'] * $item['soluong']
+                    'ThanhTien' => $thanhTien
                 ];
             }
         }
@@ -602,6 +614,11 @@ switch ($action) {
     $donhangId = $dh->themdonhang($maKhachHang, 0, $chitietdonhang, $item['size']);
 
         if ($donhangId) {
+            // Nếu là thanh toán COD, gửi email xác nhận ngay
+            if ($phuongthuc == 'COD') {
+                Mailer::guiEmailXacNhanDonHang($email, $hoten, $donhangId, $chitietdonhang, $tongTienDonHang);
+            }
+
             // Xóa giỏ hàng
             $_SESSION['cart'] = [];
             echo '<script>alert("Đặt hàng thành công! Mã đơn hàng: ' . $donhangId . '\nCảm ơn bạn đã mua hàng!"); window.location="index.php";</script>';
@@ -704,6 +721,20 @@ switch ($action) {
 
                 $dh->capnhattrangthai($vnp_TxnRef, 2); // Cập nhật thành trạng thái 3: Đã thanh toán VNPAY
                 
+                // Lấy thông tin để gửi mail
+                $donHangInfo = $dh->laydonhangtheoid($vnp_TxnRef);
+                $chiTietDonHangInfo = $ctdonhang->laychitiettheodonhang($vnp_TxnRef);
+                $khachHangInfo = $kh->layKhachHangTheoId($donHangInfo['MaKhachHang']);
+
+                // Chuẩn bị lại mảng chi tiết đơn hàng để tương thích với hàm gửi mail
+                $chiTietMail = [];
+                foreach($chiTietDonHangInfo as $ct) {
+                    $chiTietMail[] = ['TenSP' => $ct['TenSP'], 'SoLuong' => $ct['SoLuong'], 'GiaBan' => $ct['GiaBan'], 'ThanhTien' => $ct['ThanhTien']];
+                }
+
+                // Gửi email xác nhận
+                Mailer::guiEmailXacNhanDonHang($khachHangInfo['Email'], $khachHangInfo['HoTen'], $vnp_TxnRef, $chiTietMail, $donHangInfo['tongtien']);
+
                 // Xóa giỏ hàng sau khi thanh toán thành công
                 unset($_SESSION['cart']);
                 $thongbao_vnpay = "Thanh toán thành công!";
