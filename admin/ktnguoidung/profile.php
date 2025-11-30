@@ -10,8 +10,8 @@
                     $u = $_SESSION["nguoidung"];
                 ?>
                 <p><strong>Username:</strong> <?php echo htmlspecialchars($u["Username"]); ?></p>
-                <p><strong>Quyền:</strong> <?php echo ($u["loai"]==1) ? 'Admin' : (($u["loai"]==2)?'Nhân viên':'Khách hàng'); ?></p>
-                <p><strong>Trạng thái:</strong> <?php echo ($u["trangthai"]==1) ? 'Hoạt động' : 'Khóa'; ?></p>
+                <p><strong>Quyền:</strong> <?php echo ($u["loai"]==1) ? 'Admin' : 'Khách hàng'; ?></p>
+                <p><strong></strong>Trạng thái:</strong> <?php echo ($u["trangthai"]==1) ? 'Hoạt động' : 'Khóa'; ?></p>
                 <p><a class="btn btn-primary" href="index.php?action=matkhau">Đổi mật khẩu</a></p>
                 <?php else: ?>
                 <p>Chưa đăng nhập.</p>

@@ -18,7 +18,7 @@ if (empty($username) || empty($password)) {
 }
 
 try {
-    if ($tk->kiemtrataikhoanhople($username, $password) === true) {
+    if ($tk->kiemtrataikhoanadmin($username, $password) === true) {
         $_SESSION['nguoidung'] = $tk->laythongtin($username);
         header('Location: index.php?action=macdinh');
         exit();

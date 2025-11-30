@@ -76,7 +76,7 @@ class NGUOIDUNG
         $this->hoten = "";
         $this->matkhau = "";
         $this->sodienthoai = "";
-        $this->loai = 3; // Mặc định là khách hàng
+        $this->loai = 2; // Mặc định là khách hàng
         $this->trangthai = 1; // Mặc định là kích hoạt
         $this->hinhanh = ""; // Hình mặc định
     }
@@ -142,8 +142,8 @@ class NGUOIDUNG
                 $nguoidung->setId(0); // Không có ID
                 $nguoidung->setEmail($nd["email"]);
                 $nguoidung->setHoten($nd["email"]); // Tạm dùng email làm họ tên
-                $nguoidung->setSodienthoai($nd["sodienthoai"]);
-                $nguoidung->setLoai($nd["loai"] == 'Admin' ? 1 : ($nd["loai"] == 'NhanVien' ? 2 : 3));
+                $nguoidung->setSodienthoai(''); // Khởi tạo rỗng
+                $nguoidung->setLoai($nd["loai"] == 'Admin' ? 1 : 2);
                 $nguoidung->setTrangthai($nd["trangthai"] == 'Hoạt động' ? 1 : 0);
                 $nguoidung->setHinhanh($nd["hinhanh"]);
                 $dsnguoidung[] = $nguoidung;
@@ -162,7 +162,7 @@ class NGUOIDUNG
         $db = DATABASE::connect();
         try {
             // Chỉ thêm vào bảng TaiKhoan
-            $quyen = ($nguoidung->getLoai() == 1) ? 'Admin' : (($nguoidung->getLoai() == 2) ? 'NhanVien' : 'KhachHang');
+            $quyen = ($nguoidung->getLoai() == 1) ? 'Admin' : 'KhachHang';
             $tinhtrang = ($nguoidung->getTrangthai() == 1) ? 'Hoạt động' : 'Khóa';
             
             $sql = "INSERT INTO TaiKhoan (Username, Password, Quyen, TinhTrang)
@@ -221,7 +221,7 @@ class NGUOIDUNG
         $db = DATABASE::connect();
         try {
             // Chuyển đổi số sang text
-            $quyen = ($loaiMoi == 1) ? 'Admin' : (($loaiMoi == 2) ? 'NhanVien' : 'KhachHang');
+            $quyen = ($loaiMoi == 1) ? 'Admin' : 'KhachHang';
             $sql = "UPDATE TaiKhoan SET Quyen=:quyen WHERE Username=:username";
             $cmd = $db->prepare($sql);
             $cmd->bindValue(":username", $username);

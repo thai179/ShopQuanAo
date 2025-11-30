@@ -76,8 +76,8 @@
                         <div class="flex flex-col">
                             <label class="text-[#1b140e] dark:text-gray-300 text-base font-medium leading-normal pb-2" for="password">Mật khẩu</label>
                             <div class="relative flex w-full flex-1 items-stretch">
-                                <input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#1b140e] dark:text-[#fcfaf8] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#e7dbd0] dark:border-[#3a2f23] bg-[#fcfaf8] dark:bg-[#2a221a] focus:border-primary dark:focus:border-primary h-12 placeholder:text-[#97734e] dark:placeholder:text-gray-500 p-3 text-base font-normal leading-normal pr-10" id="password" name="password" placeholder="Nhập mật khẩu của bạn" type="password" value="" />
-                                <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+                                <input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#1b140e] dark:text-[#fcfaf8] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#e7dbd0] dark:border-[#3a2f23] bg-[#fcfaf8] dark:bg-[#2a221a] focus:border-primary dark:focus:border-primary h-12 placeholder:text-[#97734e] dark:placeholder:text-gray-500 p-3 text-base font-normal leading-normal pr-10" id="password" name="password" placeholder="Nhập mật khẩu của bạn" type="password" value="" required />
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-3" data-toggle-password-for="password">
                                     <span class="material-symbols-outlined text-[#97734e] dark:text-gray-500 text-xl cursor-pointer">visibility</span>
                                 </div>
                             </div>
@@ -85,8 +85,8 @@
                         <div class="flex flex-col">
                             <label class="text-[#1b140e] dark:text-gray-300 text-base font-medium leading-normal pb-2" for="confirmPassword">Xác nhận Mật khẩu</label>
                             <div class="relative flex w-full flex-1 items-stretch">
-                                <input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#1b140e] dark:text-[#fcfaf8] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#e7dbd0] dark:border-[#3a2f23] bg-[#fcfaf8] dark:bg-[#2a221a] focus:border-primary dark:focus:border-primary h-12 placeholder:text-[#97734e] dark:placeholder:text-gray-500 p-3 text-base font-normal leading-normal pr-10" id="confirmPassword" name="confirmPassword" placeholder="Xác nhận lại mật khẩu" type="password" value="" />
-                                <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+                                <input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#1b140e] dark:text-[#fcfaf8] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#e7dbd0] dark:border-[#3a2f23] bg-[#fcfaf8] dark:bg-[#2a221a] focus:border-primary dark:focus:border-primary h-12 placeholder:text-[#97734e] dark:placeholder:text-gray-500 p-3 text-base font-normal leading-normal pr-10" id="confirmPassword" name="confirmPassword" placeholder="Xác nhận lại mật khẩu" type="password" value="" required />
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-3" data-toggle-password-for="confirmPassword">
                                     <span class="material-symbols-outlined text-[#97734e] dark:text-gray-500 text-xl cursor-pointer">visibility</span>
                                 </div>
                             </div>
@@ -103,6 +103,26 @@
             </main>
         </div>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleButtons = document.querySelectorAll('[data-toggle-password-for]');
+
+            toggleButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const inputId = this.getAttribute('data-toggle-password-for');
+                    const passwordInput = document.getElementById(inputId);
+                    const icon = this.querySelector('span');
+
+                    if (passwordInput) {
+                        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                        passwordInput.setAttribute('type', type);
+
+                        icon.textContent = (type === 'password') ? 'visibility' : 'visibility_off';
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 
 </html>

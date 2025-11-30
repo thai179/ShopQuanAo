@@ -140,6 +140,10 @@
                                                 <label class="block text-sm font-medium text-text-secondary dark:text-gray-300" for="email">Mật khẩu mới</label>
                                                 <input class="form-input mt-1 block w-full rounded-md border-border-color dark:border-gray-600 bg-transparent dark:bg-gray-700 dark:text-white focus:border-gray-400 focus:ring-gray-400" id="password-new" name="MatKhauMoi" type="password" />
                                             </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-text-secondary dark:text-gray-300" for="confirm-password-new">Xác nhận mật khẩu mới</label>
+                                                <input class="form-input mt-1 block w-full rounded-md border-border-color dark:border-gray-600 bg-transparent dark:bg-gray-700 dark:text-white focus:border-gray-400 focus:ring-gray-400" id="confirm-password-new" name="XacNhanMatKhauMoi" type="password" />
+                                            </div>
                                         </div>
                                     </div>
                                     <hr class="border-border-color dark:border-gray-700" />

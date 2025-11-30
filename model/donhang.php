@@ -4,7 +4,7 @@ class DONHANG{
 	/**
 	 * Lấy danh sách tất cả đơn hàng
 	 */
-	public function xemdsdonhang(){
+	public function xemdsdonhang($tuNgay = null, $denNgay = null){
 		$db = DATABASE::connect();
 		try{
 			$sql = "SELECT 
@@ -12,12 +12,22 @@ class DONHANG{
 						dh.NgayDat as ngay, 
 						kh.HoTen as hoten, 
 						kh.DiaChi as diachi,
-						(SELECT SUM(ThanhTien) FROM CTDonHang WHERE MaDonHang = dh.MaDonHang) as tongtien,
+						SUM(ct.ThanhTien) as tongtien,
 						dh.TrangThai as trangthai
 					FROM DonHang dh
 					JOIN KhachHang kh ON dh.MaKhachHang = kh.MaKhachHang
-					ORDER BY (dh.NgayDat) DESC";
+					LEFT JOIN CTDonHang ct ON dh.MaDonHang = ct.MaDonHang";
+			
+			if ($tuNgay && $denNgay) {
+                $sql .= " WHERE DATE(dh.NgayDat) BETWEEN :tungay AND :denngay";
+            }
+            $sql .= " GROUP BY dh.MaDonHang, dh.NgayDat, kh.HoTen, kh.DiaChi, dh.TrangThai
+					  ORDER BY dh.NgayDat DESC";
 			$cmd = $db->prepare($sql);
+			if ($tuNgay && $denNgay) {
+                $cmd->bindValue(':tungay', $tuNgay);
+                $cmd->bindValue(':denngay', $denNgay);
+            }
 			$cmd->execute();
 			$result = $cmd->fetchAll();
 			return $result;
@@ -30,7 +40,7 @@ class DONHANG{
 	}
 	
 	/**
-	 * Lấy chi tiết một đơn hàng theo ID
+	 * Lấy chi tiết một đơn hàng theo ID as ngay,
 	 */
 	public function laydonhangtheoid($id){
 		$db = DATABASE::connect();
@@ -41,7 +51,7 @@ class DONHANG{
 						kh.Email as email,
 						kh.SoDT as sodienthoai,
 						kh.DiaChi as diachi,
-						(SELECT NgayLap FROM HoaDon WHERE MaHoaDon = dh.MaDonHang) as ngay,
+						dh.NgayDat as ngay,
 						(SELECT SUM(ThanhTien) FROM CTDonHang WHERE MaDonHang = dh.MaDonHang) as tongtien,
 						dh.TrangThai as trangthai
 					FROM DonHang dh

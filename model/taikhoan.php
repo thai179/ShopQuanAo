@@ -5,10 +5,26 @@ class TAIKHOAN {
         $db = DATABASE::connect();
         try {
             // accept either plain or md5-stored passwords (compat)
-            $sql = "SELECT * FROM TaiKhoan WHERE Username=:u AND (Password=:p OR Password=:p_md) AND TinhTrang='Hoạt động'";
+            $sql = "SELECT * FROM TaiKhoan WHERE Username=:u AND Password=:p_md AND TinhTrang='Hoạt động'";
             $cmd = $db->prepare($sql);
             $cmd->bindValue(":u", $username);
-            $cmd->bindValue(":p", $password);
+            $cmd->bindValue(":p_md", md5($password));
+            $cmd->execute();
+            $valid = ($cmd->rowCount() == 1);
+            $cmd->closeCursor();
+            return $valid;
+        } catch (PDOException $e) {
+            $error_message = $e->getMessage();
+            echo "<p>Lỗi truy vấn: $error_message</p>";
+            exit();
+        }
+    }
+    public function kiemtrataikhoanadmin($username, $password) {
+        $db = DATABASE::connect();
+        try {
+            $sql = "SELECT * FROM TaiKhoan WHERE Username=:u AND Password=:p_md AND TinhTrang='Hoạt động' AND Quyen='Admin'";
+            $cmd = $db->prepare($sql);
+            $cmd->bindValue(":u", $username);
             $cmd->bindValue(":p_md", md5($password));
             $cmd->execute();
             $valid = ($cmd->rowCount() == 1);
@@ -38,8 +54,8 @@ class TAIKHOAN {
                     'email' => $row['Username'],
                     'hoten' => $row['Username'],
                     'hinhanh' => null,
-                    // numeric role mapping to match previous logic: Admin=1, NhanVien=2, KhachHang=3
-                    'loai' => ($row['Quyen'] === 'Admin') ? 1 : (($row['Quyen'] === 'NhanVien') ? 2 : 3),
+                    // numeric role mapping to match previous logic: Admin=1, KhachHang=2
+                    'loai' => ($row['Quyen'] === 'Admin') ? 1 : 2,
                     // trangthai: 1 active, 0 locked
                     'trangthai' => ($row['TinhTrang'] === 'Hoạt động') ? 1 : 0,
                     // keep original columns too
@@ -62,8 +78,6 @@ class TAIKHOAN {
         try {
             $sql = "UPDATE TaiKhoan SET Password=:pwd WHERE Username=:u";
             $cmd = $db->prepare($sql);
-            // store plain password (to be compatible with provided seed). 
-            // In production, use password_hash().
             $cmd->bindValue(":pwd", $matkhauMoi);
             $cmd->bindValue(":u", $username);
             $cmd->execute();

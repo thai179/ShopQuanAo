@@ -17,6 +17,10 @@
                         <label>Mật khẩu mới</label>
                         <input class="form-control" type="password" name="txtmatkhaumoi" placeholder="Mật khẩu mới" required>
                     </div>
+                    <div class="my-3">
+                        <label>Xác nhận mật khẩu mới</label>
+                        <input class="form-control" type="password" name="txtxacnhanmatkhau" placeholder="Xác nhận mật khẩu mới" required>
+                    </div>
                     <div class="my-3 text-center">
                         <input class="btn btn-primary" type="submit" value="Lưu">
                         <input class="btn btn-warning" type="reset" value="Hủy">

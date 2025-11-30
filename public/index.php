@@ -85,13 +85,20 @@ switch ($action) {
             exit();
         }
         
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['MatKhauMoi'], $_POST['MatKhauCu'])) {
-            $matkhaucu = md5($_POST['MatKhauCu']);
-            $matkhaumoi = md5($_POST['MatKhauMoi']);
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['MatKhauMoi'], $_POST['MatKhauCu'], $_POST['XacNhanMatKhauMoi'])) {
+            $matkhaucu = $_POST['MatKhauCu'];
+            $matkhaumoi = $_POST['MatKhauMoi'];
+            $xacnhanmatkhaumoi = $_POST['XacNhanMatKhauMoi'];
+
+            if ($matkhaumoi !== $xacnhanmatkhaumoi) {
+                echo '<script>alert("Mật khẩu mới và mật khẩu xác nhận không khớp! Vui lòng thử lại."); window.location="index.php?action=thongtin";</script>';
+                exit();
+            }
+
             $username = $_SESSION['user']['Username'];
             $islogin = $taikhoan->kiemtrataikhoanhople($username, $matkhaucu);
             if ($islogin) {
-                $taikhoan->doimatkhau($username, $matkhaumoi);
+                $taikhoan->doimatkhau($username, md5($matkhaumoi));
                 session_unset();
                 session_destroy();
                 echo '<script>alert("Đổi mật khẩu thành công! Vui lòng đăng nhập lại."); window.location="index.php?action=dangnhap";</script>';
@@ -173,7 +180,7 @@ switch ($action) {
                 $username = trim($_POST['username']);
                 $password = trim($_POST['password']);
 
-                $islogin = $taikhoan->kiemtrataikhoanhople($username, md5($password));
+                $islogin = $taikhoan->kiemtrataikhoanhople($username, $password);
                 if ($islogin) {
                     // Lấy thông tin tài khoản
                     $userInfo = $taikhoan->laythongtin($username);
@@ -556,7 +563,6 @@ switch ($action) {
         // Trang thanh toán
         include("checkout.php");
         break;
-        // Kiểm tra người dùng đã đăng nhập chưa
     case "xulythanhtoan":
         // Kiểm tra giỏ hàng không rỗng
         if (empty($_SESSION['cart'])) {

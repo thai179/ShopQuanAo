@@ -75,34 +75,6 @@
 					</li>
 
 					<li class="sidebar-header text-info">
-						TỔ CHỨC
-					</li>
-
-					<li class="sidebar-item <?php if (strpos($_SERVER['REQUEST_URI'], "qlcuahang") !== false)
-						echo "active"; ?>">
-						<a class="sidebar-link" href="../qlcuahang/index.php">
-							<i class="align-middle" data-feather="home"></i> <span class="align-middle">Quản lý cửa
-								hàng</span>
-						</a>
-					</li>
-
-					<li class="sidebar-item <?php if (strpos($_SERVER['REQUEST_URI'], "qlnhanvien") !== false)
-						echo "active"; ?>">
-						<a class="sidebar-link" href="../qlnhanvien/index.php">
-							<i class="align-middle" data-feather="user-check"></i> <span class="align-middle">Quản lý
-								nhân viên</span>
-						</a>
-					</li>
-
-					<li class="sidebar-item <?php if (strpos($_SERVER['REQUEST_URI'], "qlchamcong") !== false)
-						echo "active"; ?>">
-						<a class="sidebar-link" href="../qlchamcong/index.php">
-							<i class="align-middle" data-feather="clock"></i> <span class="align-middle">Quản lý chấm
-								công</span>
-						</a>
-					</li>
-
-					<li class="sidebar-header text-info">
 						KINH DOANH
 					</li>
 

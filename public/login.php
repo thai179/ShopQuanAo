@@ -80,8 +80,8 @@
                                 <label class="flex flex-col">
                                     <p class="text-sm font-medium leading-normal pb-2">Mật khẩu</p>
                                     <div class="relative flex w-full flex-1 items-stretch">
-                                        <input name="password" class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark focus:border-primary focus:ring-primary h-12 pl-4 pr-12 text-base font-normal leading-normal placeholder:text-text-muted-light dark:placeholder:text-text-muted-dark text-text-light dark:text-text-dark" placeholder="Nhập mật khẩu của bạn" type="password" value="" />
-                                        <button class="absolute inset-y-0 right-0 flex items-center pr-4 text-text-muted-light dark:text-text-muted-dark" type="button">
+                                        <input id="password-input" name="password" class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark focus:border-primary focus:ring-primary h-12 pl-4 pr-12 text-base font-normal leading-normal placeholder:text-text-muted-light dark:placeholder:text-text-muted-dark text-text-light dark:text-text-dark" placeholder="Nhập mật khẩu của bạn" type="password" value="" />
+                                        <button id="toggle-password-btn" class="absolute inset-y-0 right-0 flex items-center pr-4 text-text-muted-light dark:text-text-muted-dark" type="button">
                                             <span class="material-symbols-outlined">visibility</span>
                                         </button>
                                     </div>
@@ -103,5 +103,25 @@
             </div>
         </div>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const togglePasswordBtn = document.getElementById('toggle-password-btn');
+            const passwordInput = document.getElementById('password-input');
+            const icon = togglePasswordBtn.querySelector('span');
+
+            togglePasswordBtn.addEventListener('click', function() {
+                // Toggle the type attribute
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+
+                // Toggle the icon
+                if (type === 'password') {
+                    icon.textContent = 'visibility';
+                } else {
+                    icon.textContent = 'visibility_off';
+                }
+            });
+        });
+    </script>
 </body>
 </html>

@@ -36,7 +36,8 @@
                 <td><?= htmlspecialchars($item['NgaySaoLuu']) ?></td>
                 <td><?= htmlspecialchars($item['NguoiThucHien']) ?></td>
                 <td>
-                    <form method="post" action="index.php?action=phuchoi" onsubmit="return valid_restore()" style="display:inline;">
+                    <form method="post" action="index.php" onsubmit="return valid_restore()" style="display:inline;">
+                        <input type="hidden" name="action" value="phuchoi">
                         <input type="hidden" name="TenFile" value="<?= htmlspecialchars($item['TenFile']) ?>">
                         <button type="submit" class="btn btn-warning">Phục hồi</button>
                     </form>

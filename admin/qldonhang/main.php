@@ -1,7 +1,34 @@
 <?php include("../inc/top.php"); ?>
 
 <h3>Quản lý đơn hàng</h3>
-<a href="index.php?action=them" class="btn btn-success"><i class="align-middle" data-feather="plus-circle"></i> Thêm mới</a>
+
+<div class="row mb-3">
+    <div class="col-auto">
+        <a href="index.php?action=them" class="btn btn-success"><i class="align-middle" data-feather="plus-circle"></i> Thêm mới</a>
+    </div>
+    <div class="col-auto ms-auto">
+        <form method="get" class="d-flex align-items-center gap-2">
+            <input type="hidden" name="action" value="xem">
+            
+            <!-- Bổ sung dropdown lọc nhanh -->
+            <select name="filter" class="form-select" onchange="this.form.submit()">
+                <option value="">Lọc theo thời gian</option>
+                <option value="today" <?php if(isset($_GET['filter']) && $_GET['filter'] == 'today') echo 'selected'; ?>>Hôm nay</option>
+                <option value="yesterday" <?php if(isset($_GET['filter']) && $_GET['filter'] == 'yesterday') echo 'selected'; ?>>Hôm qua</option>
+                <option value="thisweek" <?php if(isset($_GET['filter']) && $_GET['filter'] == 'thisweek') echo 'selected'; ?>>Tuần này</option>
+                <option value="thismonth" <?php if(isset($_GET['filter']) && $_GET['filter'] == 'thismonth') echo 'selected'; ?>>Tháng này</option>
+            </select>
+
+            <input type="date" name="tungay" class="form-control" value="<?php echo isset($_GET['tungay']) ? htmlspecialchars($_GET['tungay']) : ''; ?>" title="Từ ngày">
+            <input type="date" name="denngay" class="form-control" value="<?php echo isset($_GET['denngay']) ? htmlspecialchars($_GET['denngay']) : ''; ?>" title="Đến ngày">
+            <button type="submit" class="btn btn-primary">Lọc</button>
+            <?php if (!empty($_GET['filter']) || !empty($_GET['tungay']) || !empty($_GET['denngay'])): ?>
+                <a href="index.php?action=xem" class="btn btn-secondary ms-2">Xóa lọc</a>
+            <?php endif; ?>
+        </form>
+    </div>
+</div>
+
 <br>
 <table class="table table-hover">
     <tr class="table-primary">

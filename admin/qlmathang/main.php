@@ -1,12 +1,23 @@
 <?php include("../inc/top.php"); ?>
 
 <h3>Quản lý mặt hàng</h3> 
+<div class="row">
+    <div class="col">
+        <a href="index.php?action=them" class="btn btn-info">
+            <i class="align-middle" data-feather="plus-circle"></i> 
+            Thêm mặt hàng
+        </a>
+    </div>
+    <div class="col">
+        <form class="d-flex" method="get">
+            <input type="hidden" name="action" value="timkiem">
+            <input class="form-control me-2" type="search" name="txttimkiem" placeholder="Nhập tên sản phẩm" 
+                   value="<?php echo isset($_GET['txttimkiem']) ? htmlspecialchars($_GET['txttimkiem']) : ''; ?>">
+            <button class="btn btn-outline-success" type="submit">Tìm</button>
+        </form>
+    </div>
+</div>
 <br>
-<a href="index.php?action=them" class="btn btn-info">
-	<i class="align-middle" data-feather="plus-circle"></i> 
-	Thêm mặt hàng
-</a>
-<br> <br> 
 <table class="table table-hover">
 	<tr>
 		<th>Tên mặt hàng</th>

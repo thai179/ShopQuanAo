@@ -45,9 +45,7 @@
                                 <td>
                                     <?php 
                                     if ($loai == 1) {
-                                        echo '<span class="badge bg-danger">Admin</span>';
-                                    } elseif ($loai == 2) {
-                                        echo '<span class="badge bg-primary">Nhân viên</span>';
+                                        echo '<span class="badge bg-danger">Admin</span>';                                    
                                     } else {
                                         echo '<span class="badge bg-secondary">Khách hàng</span>';
                                     }
@@ -85,8 +83,7 @@
                                                 <i data-feather="settings"></i> Quyền
                                             </button>
                                             <ul class="dropdown-menu">
-                                                <li><a class="dropdown-item" href="?action=doiquyen&username=<?php echo urlencode($username); ?>&loai=2">Nhân viên</a></li>
-                                                <li><a class="dropdown-item" href="?action=doiquyen&username=<?php echo urlencode($username); ?>&loai=3">Khách hàng</a></li>
+                                                <li><a class="dropdown-item" href="?action=doiquyen&username=<?php echo urlencode($username); ?>&loai=1">Admin</a></li>
                                             </ul>
                                         </div>
                                     <?php else: ?>

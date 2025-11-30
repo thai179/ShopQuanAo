@@ -27,8 +27,8 @@
 
     <h4>Chi tiết đơn hàng</h4>
     <div id="product-list">
-        <div class="row product-item mb-2">
-            <div class="col-md-6">
+        <div class="row product-item mb-3">
+            <div class="col-md-5">
                 <label class="form-label">Sản phẩm</label>
                 <select class="form-select" name="sanpham_id[]">
                     <option value="">-- Chọn sản phẩm --</option>
@@ -37,7 +37,16 @@
                     <?php endforeach; ?>
                 </select>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
+                <label class="form-label">Size</label>
+                <select class="form-select" name="size[]">
+                    <option value="S">S</option>
+                    <option value="M">M</option>
+                    <option value="L">L</option>
+                    <option value="XL">XL</option>
+                </select>
+            </div>
+            <div class="col-md-2">
                 <label class="form-label">Số lượng</label>
                 <input type="number" class="form-control" name="soluong[]" value="1" min="1">
             </div>
@@ -60,6 +69,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var firstItem = productList.querySelector('.product-item');
         var newItem = firstItem.cloneNode(true);
         newItem.querySelector('input[type=number]').value = '1';
+        newItem.querySelector('select[name="size[]"]').selectedIndex = 0;
         newItem.querySelector('select').selectedIndex = 0;
         
         var removeBtn = newItem.querySelector('.remove-product-btn');

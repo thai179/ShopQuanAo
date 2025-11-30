@@ -20,7 +20,38 @@ $mh = new MATHANG();
 
 switch($action){
     case "xem":
-        $donhang= $dh->xemdsdonhang();
+        $tungay = isset($_GET['tungay']) && !empty($_GET['tungay']) ? $_GET['tungay'] : null;
+        $denngay = isset($_GET['denngay']) && !empty($_GET['denngay']) ? $_GET['denngay'] : null;
+        $filter = isset($_GET['filter']) ? $_GET['filter'] : null;
+
+        if ($filter) {
+            $today = new DateTime();
+            switch ($filter) {
+                case 'today':
+                    $tungay = $denngay = $today->format('Y-m-d');
+                    break;
+                case 'yesterday':
+                    $yesterday = (new DateTime())->modify('-1 day');
+                    $tungay = $denngay = $yesterday->format('Y-m-d');
+                    break;
+                case 'thisweek':
+                    $startOfWeek = (new DateTime())->modify('monday this week');
+                    $tungay = $startOfWeek->format('Y-m-d');
+                    $denngay = $today->format('Y-m-d');
+                    break;
+                case 'thismonth':
+                    $tungay = $today->format('Y-m-01');
+                    $denngay = $today->format('Y-m-d');
+                    break;
+            }
+            // Cập nhật lại giá trị cho GET để hiển thị trên form
+            $_GET['tungay'] = $tungay;
+            $_GET['denngay'] = $denngay;
+        }
+
+        // Gọi hàm xemdsdonhang với các tham số đã được xử lý
+        $donhang = $dh->xemdsdonhang($tungay, $denngay);
+
 		include("main.php");
         break;
 	case "chitiet":
@@ -48,6 +79,7 @@ switch($action){
         $TrangThai = $_POST["trangthai"];
         $sanpham_ids = $_POST["sanpham_id"];
         $soluongs = $_POST["soluong"];
+        $sizes = $_POST["size"]; // Lấy mảng size từ form
 
         $chi_tiet_don_hang = [];
         for ($i = 0; $i < count($sanpham_ids); $i++) {
@@ -56,13 +88,14 @@ switch($action){
                 $chi_tiet_don_hang[] = [
                     'MaSP' => $sanpham_ids[$i],
                     'SoLuong' => $soluongs[$i],
-                    'ThanhTien' => $soluongs[$i] * $sp['GiaBan']
+                    'ThanhTien' => $soluongs[$i] * $sp['GiaBan'],
+                    'Size' => $sizes[$i] // Thêm size vào chi tiết
                 ];
             }
         }
         
         if($MaKhachHang && !empty($chi_tiet_don_hang)){
-            $dh->themdonhang($MaKhachHang, $TrangThai, $chi_tiet_don_hang);
+            $dh->themdonhang($MaKhachHang, $TrangThai, $chi_tiet_don_hang, $chi_tiet_don_hang[0]['Size']); // Truyền size vào hàm
         }
         
         $donhang = $dh->xemdsdonhang();

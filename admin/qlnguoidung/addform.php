@@ -30,8 +30,7 @@
                             <label class="form-label">Quyền <span class="text-danger">*</span></label>
                             <select class="form-select" name="optloai" required>
                                 <option value="">-- Chọn quyền --</option>
-                                <option value="1">Admin</option>
-                                <option value="2" selected>Nhân viên</option>
+                                <option value="1">Admin</option>                                
                                 <option value="3">Khách hàng</option>
                             </select>
                         </div>
@@ -67,10 +66,6 @@
                         <li class="mb-2">
                             <i class="text-primary" data-feather="info"></i>
                             Admin: Toàn quyền hệ thống
-                        </li>
-                        <li class="mb-2">
-                            <i class="text-primary" data-feather="info"></i>
-                            Nhân viên: Quản lý cửa hàng
                         </li>
                         <li class="mb-2">
                             <i class="text-primary" data-feather="info"></i>

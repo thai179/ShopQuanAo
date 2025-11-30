@@ -26,6 +26,15 @@ switch ($action) {
         $mathang = $mh->laymathang();
         include("main.php");
         break;
+    case "timkiem":
+        if(isset($_REQUEST["txttimkiem"])){
+            $tukhoa = $_REQUEST["txttimkiem"];
+            $mathang = $mh->timkiemmathang($tukhoa);
+        } else {
+            $mathang = $mh->laymathang();
+        }
+        include("main.php");
+        break;
     case "them":
         $danhmuc = $dm->laydanhmuc();
         include("addform.php");
