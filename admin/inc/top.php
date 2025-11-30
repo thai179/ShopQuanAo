@@ -213,12 +213,7 @@
 							<!-- CẬP NHẬT NỘI DUNG Ở ĐÂY-->
 							<a class="nav-link dropdown-toggle d-none d-sm-inline-block" href="#"
 								data-bs-toggle="dropdown">
-								<img src="<?php if
-								($_SESSION["nguoidung"]["hinhanh"] == NULL)
-									echo "../../images/users/user.png";
-								else
-									echo
-										"../../images/users/" . $_SESSION["nguoidung"]["hinhanh"]; ?>" class="avatar img-fluid rounded me-1"
+								<img src="../../images/user.png" class="avatar img-fluid rounded me-1"
 									alt="<?php echo $_SESSION["nguoidung"]["hoten"]; ?>" /> <span class="text-dark">Chào <?php echo
 									   	$_SESSION["nguoidung"]["hoten"]; ?></span>
 							</a>

@@ -40,12 +40,12 @@ switch ($action) {
         include("addform.php");
         break;
     case "xulythem":
-        if (!isset($_POST["txttenmathang"]) || !isset($_FILES["filehinhanh"])) {
+        // Kiểm tra các trường bắt buộc, bao gồm cả ảnh đại diện
+        if (!isset($_POST["txttenmathang"]) || !isset($_FILES["filehinhanh"]) || $_FILES["filehinhanh"]["error"] != 0) {
             throw new Exception("Thiếu dữ liệu bắt buộc.");
         }
 
         $mathanghh = new MATHANG();
-        $mathanghh->settenmathang($_POST["txttenmathang"]);
         $mathanghh->setgiagoc($_POST["txtgianhap"]);
         $mathanghh->setgiaban($_POST["txtgiaban"]);
         $mathanghh->setdanhmuc_id($_POST["optdanhmuc"]);
@@ -59,50 +59,65 @@ switch ($action) {
         }
         $mathanghh->setSoLuongTon($tong_soluong);
 
-        // Thêm mặt hàng vào CSDL
-        $mh->themmathang($mathanghh);
-
-        $maSP = $mh->laymathangvuathem();
-
-        // Thêm biến thể sản phẩm
-        foreach ($soluong_sizes as $ten_size => $soluong) {
-            $bt->thembienthe($maSP, strtoupper($ten_size), (int)$soluong);
-        }
-
         // Thư mục lưu ảnh
         $uploadFolder = __DIR__ . "/../../images/products/";
         if (!is_dir($uploadFolder)) {
             mkdir($uploadFolder, 0775, true);
         }
-
-        // Duyệt file upload (dự kiến input name="filehinhanh[]" multiple)
         $allowedExt = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-        $order = 1;
-        foreach ($_FILES["filehinhanh"]["tmp_name"] as $key => $tmp_name) {
-            if (!is_uploaded_file($tmp_name)) continue;
 
-            $originalName = basename($_FILES["filehinhanh"]["name"][$key]);
+        // Xử lý ảnh đại diện
+        $mainImageName = null;
+        if (isset($_FILES["filehinhanh"]) && $_FILES["filehinhanh"]["error"] == 0) {
+            $originalName = basename($_FILES["filehinhanh"]["name"]);
             $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
-            if (!in_array($ext, $allowedExt)) continue; // hoặc báo lỗi
-
-            // tạo tên file duy nhất tránh trùng
-            $safeBase = preg_replace("/[^a-zA-Z0-9\.\-_]/", "", pathinfo($originalName, PATHINFO_FILENAME));
-            $uniqueName = $safeBase . '_' . time() . '_' . $key . '.' . $ext;
-            $relativePath = "images/products/" . $uniqueName;
-            $dest = $uploadFolder . $uniqueName;
-
-            if (!move_uploaded_file($tmp_name, $dest)) {
-                continue;
+            if (in_array($ext, $allowedExt)) {
+                $safeBase = preg_replace("/[^a-zA-Z0-9\.\-_]/", "", pathinfo($originalName, PATHINFO_FILENAME));
+                $uniqueName = $safeBase . '_' . time() . '.' . $ext;
+                $dest = $uploadFolder . $uniqueName;
+                if (move_uploaded_file($_FILES["filehinhanh"]["tmp_name"], $dest)) {
+                    $mainImageName = $uniqueName; // Chỉ lưu tên file
+                }
             }
-
-            $hinhAnhSP = new HINHANHSANPHAM();
-            $hinhAnhSP->setMaSP($maSP);
-            $hinhAnhSP->setDuongdan($relativePath);
-            $hinhAnhSP->themHinhAnh();
         }
 
-        $duongdanAnh = $ha->layHinhAnhTheoMaSP($maSP);
-        $mh->capNhatHinhAnh($maSP, $duongdanAnh);
+        // Gán thông tin và thêm mặt hàng vào CSDL
+        $mathanghh->settenmathang($_POST["txttenmathang"]);
+        $mathanghh->sethinhanh($mainImageName);
+        $mh->themmathang($mathanghh);
+
+        // Lấy ID sản phẩm vừa thêm
+        $maSP = $mh->laymathangvuathem();
+
+        // Thêm biến thể sản phẩm (size và số lượng)
+        foreach ($soluong_sizes as $ten_size => $soluong) {
+            if((int)$soluong > 0) {
+                $bt->thembienthe($maSP, strtoupper($ten_size), (int)$soluong);
+            }
+        }
+
+        // Xử lý các ảnh mô tả (nếu có)
+        if (isset($_FILES['fileanhmota']) && !empty($_FILES['fileanhmota']['name'][0])) {
+            foreach ($_FILES["fileanhmota"]["tmp_name"] as $key => $tmp_name) {
+                if (!is_uploaded_file($tmp_name)) continue;
+
+                $originalName = basename($_FILES["fileanhmota"]["name"][$key]);
+                $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+                if (!in_array($ext, $allowedExt)) continue;
+
+                $safeBase = preg_replace("/[^a-zA-Z0-9\.\-_]/", "", pathinfo($originalName, PATHINFO_FILENAME));
+                $uniqueName = $safeBase . '_desc_' . time() . '_' . $key . '.' . $ext;
+                $relativePath = "images/products/" . $uniqueName;
+                $dest = $uploadFolder . $uniqueName;
+
+                if (move_uploaded_file($tmp_name, $dest)) {
+                    $hinhAnhSP = new HINHANHSANPHAM();
+                    $hinhAnhSP->setMaSP($maSP);
+                    $hinhAnhSP->setDuongdan($relativePath); // Lưu đường dẫn tương đối
+                    $hinhAnhSP->themHinhAnh();
+                }
+            }
+        }
 
         $mathang = $mh->laymathang();
         include("main.php");

@@ -59,10 +59,15 @@
 	</div>
 	<!-- Thêm nhiều hình ảnh -->
 	<div class="mb-3 mt-3">
-		<label>Hình ảnh</label>
-		<input id="upload" class="form-control" type="file" name="filehinhanh[]" multiple accept="image/*">
+		<label for="filehinhanh" class="form-label">Ảnh đại diện</label>
+		<input id="filehinhanh" class="form-control" type="file" name="filehinhanh" required accept="image/*">
+	</div>
+
+	<div class="mb-3 mt-3">
+		<label for="fileanhmota" class="form-label">Ảnh mô tả (chọn tối đa 4 ảnh)</label>
+		<input id="fileanhmota" class="form-control" type="file" name="fileanhmota[]" multiple accept="image/*">
 		<script>
-			document.getElementById('upload').addEventListener('change', function(e) {
+			document.getElementById('fileanhmota').addEventListener('change', function(e) {
 				if (this.files.length > 4) {
 					alert('Chỉ được chọn tối đa 4 ảnh!');
 					this.value = '';

@@ -196,13 +196,14 @@ class MATHANG
     {
         $dbcon = DATABASE::connect();
         try {
-            $sql = "INSERT INTO SanPham(TenSP, GiaGoc, GiaBan, MoTa, MaDM, SoLuongTon)
-                    VALUES(:tensp, :giagoc, :giaban, :mota, :madm, :slt)";
+            $sql = "INSERT INTO SanPham(TenSP, GiaGoc, GiaBan, MoTa, MaDM, SoLuongTon, HinhAnh)
+                    VALUES(:tensp, :giagoc, :giaban, :mota, :madm, :slt, :hinhanh)";
             $cmd = $dbcon->prepare($sql);
             $cmd->bindValue(":tensp", $mathang->getTenMatHang());
             $cmd->bindValue(":giagoc", $mathang->getGiaGoc());
             $cmd->bindValue(":giaban", $mathang->getGiaBan());
             $cmd->bindValue(":madm", $mathang->getDanhMuc_Id());
+            $cmd->bindValue(":hinhanh", $mathang->getHinhAnh());
             $cmd->bindValue(":mota", $mathang->getMoTa());
             $cmd->bindValue(":slt", $mathang->getSoLuongTon());
             
