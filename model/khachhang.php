@@ -192,4 +192,19 @@ class KhachHang
             return false;
         }
     }
+
+    public static function timKiemKhachHang($keyword)
+    {
+        try {
+            $db = DATABASE::connect();
+            $sql = "SELECT * FROM KhachHang WHERE HoTen LIKE :keyword";
+            $stmt = $db->prepare($sql);
+            $stmt->bindValue(':keyword', '%' . $keyword . '%');
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            echo "Connection failed: " . $e->getMessage();
+            return [];
+        }
+    }
 }

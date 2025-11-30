@@ -133,5 +133,26 @@ class SUKIEN
             exit();
         }
     }
+
+    // Lấy tất cả các sự kiện đang diễn ra và có hình ảnh để hiển thị trên carousel
+    public function laysukienhienhanh()
+    {
+        $db = DATABASE::connect();
+        try {
+            $sql = "SELECT * FROM SuKien 
+                    WHERE CURDATE() BETWEEN NgayBatDau AND NgayKetThuc 
+                    AND HinhAnh IS NOT NULL AND HinhAnh != ''
+                    ORDER BY MaSuKien DESC";
+            $cmd = $db->prepare($sql);
+            $cmd->execute();
+            $sukien = $cmd->fetchAll();
+            $cmd->closeCursor();
+            return $sukien;
+        } catch (PDOException $e) {
+            $error_message = $e->getMessage();
+            echo "<p>Lỗi truy vấn: $error_message</p>";
+            return [];
+        }
+    }
 }
 ?>

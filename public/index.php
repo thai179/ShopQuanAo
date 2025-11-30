@@ -210,6 +210,7 @@ switch ($action) {
     case "null":
         // Trang chủ - hiển thị sản phẩm
         $mathang = $mh->laymathang();
+        $sukien_carousel = $sk->laysukienhienhanh(); // Lấy sự kiện cho carousel
         $sukien_hientai = $sk->laysukiendangdienra();
 
         if ($sukien_hientai) {

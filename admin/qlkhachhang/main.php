@@ -2,6 +2,47 @@
 
 <h2>Quản lý Khách Hàng</h2>
 <h4 class="text-info">Danh sách khách hàng</h4>
+
+<div class="row mb-3">
+    <div class="col">
+        <button class="btn btn-info" data-bs-toggle="collapse" data-bs-target="#themkhachhang">Thêm khách hàng</button>
+    </div>
+    <div class="col">
+        <form class="d-flex" method="get">
+            <input type="hidden" name="action" value="timkiem">
+            <input class="form-control me-2" type="search" name="tukhoa" placeholder="Nhập tên khách hàng" 
+                   value="<?php echo isset($_GET['tukhoa']) ? htmlspecialchars($_GET['tukhoa']) : ''; ?>">
+            <button class="btn btn-outline-success" type="submit">Tìm</button>
+        </form>
+    </div>
+</div>
+<div id="themkhachhang" class="collapse mt-3 mb-3">
+    <h4 class="text-info">Thêm mới</h4>
+    <form method="post">
+        <div class="row">
+            <input type="hidden" name="action" value="them">
+            <div class="col">
+                <label>Họ Tên:</label>
+                <input type="text" name="hoten" class="form-control" required>
+                <label>Email:</label>
+                <input type="email" name="email" class="form-control" required>
+                <label>Số Điện Thoại:</label>
+                <input type="text" name="sodienthoai" class="form-control" required>
+                <label>Giới Tính:</label>
+                <select name="gioitinh" class="form-control" required>
+                    <option value="Nam">Nam</option>
+                    <option value="Nữ">Nữ</option>
+                </select>
+                <label>Ngày Sinh:</label>
+                <input type="date" name="ngaysinh" class="form-control" required>
+                <label>Địa Chỉ:</label>
+                <input type="text" name="diachi" class="form-control" required>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary mt-3">Thêm khách hàng</button>
+    </form>
+</div>
+
 <table class="table table-hover">
     <tr>
         <th>Họ Tên</th>
@@ -37,31 +78,5 @@
     <?php endforeach; ?>
 </table>
 <!-- Thêm mới danh mục -->
-<button class="btn btn-info" data-bs-toggle="collapse" data-bs-target="#themkhachhang">Thêm khách hàng</button>
-<div id="themkhachhang" class="collapse mt-3 mb-3">
-    <h4 class="text-info">Thêm mới</h4>
-    <form method="post">
-        <div class="row">
-            <input type="hidden" name="action" value="them">
-            <div class="col">
-                <label>Họ Tên:</label>
-                <input type="text" name="hoten" class="form-control" required>
-                <label>Email:</label>
-                <input type="email" name="email" class="form-control" required>
-                <label>Số Điện Thoại:</label>
-                <input type="text" name="sodienthoai" class="form-control" required>
-                <label>Giới Tính:</label>
-                <select name="gioitinh" class="form-control" required>
-                    <option value="Nam">Nam</option>
-                    <option value="Nữ">Nữ</option>
-                </select>
-                <label>Ngày Sinh:</label>
-                <input type="date" name="ngaysinh" class="form-control" required>
-                <label>Địa Chỉ:</label>
-                <input type="text" name="diachi" class="form-control" required>
-            </div>
-        </div>
-        <button type="submit" class="btn btn-primary mt-3">Thêm khách hàng</button>
-    </form>
-</div>
+
 <?php include("../inc/bottom.php"); ?>

@@ -1,45 +1,60 @@
         <!-- Carousel -->
         <style>
-            #demo {
-                max-height: 100px;
-                overflow: hidden;
+            #heroCarousel {
+                height: 500px; /* Chiều cao mong muốn cho carousel */
+                overflow: hidden; /* Ẩn phần thừa của ảnh */
             }
-            #demo .carousel-inner {
-                max-height: 100px;
+            #heroCarousel .carousel-inner,
+            #heroCarousel .carousel-item {
+                height: 100%;
             }
-            #demo .carousel-item img {
-                width: 50px;
-                height: 100px;
-                object-fit: cover;
+            #heroCarousel .carousel-item img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover; /* Đảm bảo ảnh lấp đầy khung mà không bị méo */
+                object-position: center;
+            }
+            .carousel-caption-custom {
+                background-color: rgba(0, 0, 0, 0.5); /* Thêm lớp nền mờ cho chữ dễ đọc */
+                border-radius: 0.5rem;
+                padding: 1rem;
             }
         </style>
-        <div id="demo" class="carousel slide shadow" data-bs-ride="carousel">
+        <div id="heroCarousel" class="carousel slide shadow" data-bs-ride="carousel">
 
             <!-- Indicators/dots -->
             <div class="carousel-indicators">
-            <button type="button" data-bs-target="#demo" data-bs-slide-to="0" class="active"></button>
-            <button type="button" data-bs-target="#demo" data-bs-slide-to="1"></button>
-            <button type="button" data-bs-target="#demo" data-bs-slide-to="2"></button>
+                <?php if (!empty($sukien_carousel)): ?>
+                    <?php foreach ($sukien_carousel as $index => $sk): ?>
+                        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="<?php echo $index; ?>" class="<?php if($index == 0) echo 'active'; ?>"></button>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
         
             <!-- The slideshow/carousel -->
             <div class="carousel-inner">
-            <div class="carousel-item active">
-                <img src="../images/carousel/h1.jpg" alt="Dụng cụ văn phòng" class="d-block w-100">
-            </div>
-            <div class="carousel-item">
-                <img src="../images/carousel/h2.jpg" alt="Dụng cụ học tập" class="d-block w-100">
-            </div>
-            <div class="carousel-item">
-                <img src="../images/carousel/h3.jpg" alt="Văn phòng phẩm" class="d-block w-100">
-            </div>
+                <?php if (empty($sukien_carousel)): ?>
+                    <div class="carousel-item active">
+                        <img src="../images/carousel/default.jpg" alt="Chào mừng đến với shop" class="d-block w-100">
+                    </div>
+                <?php else: ?>
+                    <?php foreach ($sukien_carousel as $index => $sk): ?>
+                        <div class="carousel-item <?php if($index == 0) echo 'active'; ?>">
+                            <img src="../<?php echo htmlspecialchars($sk['HinhAnh']); ?>" alt="<?php echo htmlspecialchars($sk['TenSuKien']); ?>" class="d-block w-100">
+                            <div class="carousel-caption d-none d-md-block carousel-caption-custom">
+                                <h5><?php echo htmlspecialchars($sk['TenSuKien']); ?></h5>
+                                <p>Ưu đãi đặc biệt chỉ có tại UNI Shop.</p>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
         
             <!-- Left and right controls/icons -->
-            <button class="carousel-control-prev" type="button" data-bs-target="#demo" data-bs-slide="prev">
+            <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
             <span class="carousel-control-prev-icon"></span>
             </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#demo" data-bs-slide="next">
+            <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
             <span class="carousel-control-next-icon"></span>
             </button>
         </div>

@@ -43,8 +43,5 @@ class DONHANGCT{
             exit();
         }
     }
-	
-
-	
 }
 ?>

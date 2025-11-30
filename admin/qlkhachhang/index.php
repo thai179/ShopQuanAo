@@ -61,6 +61,15 @@ switch ($action) {
             echo '<script>alert("Xóa khách hàng thành công!"); window.location="index.php";</script>';
         }
         break;
+    case 'timkiem':
+        if (isset($_GET['tukhoa'])) {
+            $tukhoa = $_GET['tukhoa'];
+            $khachhangs = $kh->timKiemKhachHang($tukhoa);
+        } else {
+            $khachhangs = $kh->layTatCaKhachHang();
+        }
+        include 'main.php';
+        break;
     default:
         break;
 }
